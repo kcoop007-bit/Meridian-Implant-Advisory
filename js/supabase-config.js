@@ -5,8 +5,8 @@
 // The "anon" key is safe to expose in client-side code by design —
 // it only allows what your Row Level Security policies permit.
 // ---------------------------------------------------------------
-window.MERIDIAN_SUPABASE_URL = "https://YOUR-PROJECT-REF.supabase.co";
-window.MERIDIAN_SUPABASE_ANON_KEY = "YOUR-ANON-PUBLIC-KEY";
+window.MERIDIAN_SUPABASE_URL = "https://zesnsbxkiteqzggkckyz.supabase.co";
+window.MERIDIAN_SUPABASE_ANON_KEY = "sb_publishable_4HcIH0GNa77OjQErgH5JKg_tqFEcfGu";
 
 window.getSupabaseClient = function () {
   if (

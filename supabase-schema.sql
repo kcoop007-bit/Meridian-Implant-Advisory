@@ -59,6 +59,22 @@ alter table public.profiles enable row level security;
 alter table public.resources enable row level security;
 alter table public.leads enable row level security;
 
+-- Helper: is the current user an admin? SECURITY DEFINER means this
+-- function reads public.profiles with elevated privileges, bypassing
+-- RLS internally -- which is what avoids the infinite-recursion trap
+-- you'd get from a policy on `profiles` querying `profiles` directly.
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.profiles where id = auth.uid() and role = 'admin'
+  );
+$$;
+
 -- profiles: a user can read their own profile
 drop policy if exists "read own profile" on public.profiles;
 create policy "read own profile" on public.profiles
@@ -67,9 +83,7 @@ create policy "read own profile" on public.profiles
 -- profiles: admins can read every profile
 drop policy if exists "admins read all profiles" on public.profiles;
 create policy "admins read all profiles" on public.profiles
-  for select using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for select using (public.is_admin());
 
 -- resources: any signed-in user can view the list
 drop policy if exists "authenticated read resources" on public.resources;
@@ -79,15 +93,11 @@ create policy "authenticated read resources" on public.resources
 -- resources: only admins can add / remove
 drop policy if exists "admins insert resources" on public.resources;
 create policy "admins insert resources" on public.resources
-  for insert with check (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for insert with check (public.is_admin());
 
 drop policy if exists "admins delete resources" on public.resources;
 create policy "admins delete resources" on public.resources
-  for delete using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for delete using (public.is_admin());
 
 -- leads: anyone (even logged-out visitors) can submit the contact form
 drop policy if exists "anyone can submit a lead" on public.leads;
@@ -109,17 +119,11 @@ create policy "authenticated read resource files" on storage.objects
 
 drop policy if exists "admins upload resource files" on storage.objects;
 create policy "admins upload resource files" on storage.objects
-  for insert with check (
-    bucket_id = 'resources' and
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for insert with check (bucket_id = 'resources' and public.is_admin());
 
 drop policy if exists "admins delete resource files" on storage.objects;
 create policy "admins delete resource files" on storage.objects
-  for delete using (
-    bucket_id = 'resources' and
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for delete using (bucket_id = 'resources' and public.is_admin());
 
 -- ===================================================================
 -- After running this once:
