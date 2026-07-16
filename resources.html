@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .dz {
+    border: 2px dashed var(--paper-line);
+    border-radius: var(--radius);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    background: var(--paper-soft);
+    transition: all 0.15s ease;
+    margin-bottom: 20px;
+  }
+  .dz.dz-active { border-color: var(--gold); background: rgba(184,147,95,0.08); }
+  .dz .dz-text { font-weight: 600; color: var(--text-soft); }
+  .dz .dz-sub { font-size: 0.82rem; color: var(--text-faint); margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;">
+  <div class="container"><p>Loading...</p></div>
+</section>
+
+<section id="not-configured" style="display:none; padding:96px 0;">
+  <div class="container narrow center">
+    <h2>Client portal coming soon</h2>
+    <p>This part of the site isn't fully wired up yet. <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">Get in touch</a> in the meantime.</p>
+  </div>
+</section>
+
+<section id="portal" style="display:none; padding:64px 0 100px;">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:44px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <span class="eyebrow">Client Portal</span>
+        <h1 style="font-size:2.1rem;">Your resources</h1>
+        <p style="margin:0; color:var(--text-faint); font-size:0.9rem;">Signed in as <span id="user-email"></span></p>
+      </div>
+      <button id="logout-btn" class="btn btn-outline-dark btn-sm">Log Out</button>
+    </div>
+
+    <div id="admin-panel" class="card" style="display:none; margin-bottom:48px;">
+      <span class="badge" style="margin-bottom:16px;">Admin</span>
+      <h3>Add a resource</h3>
+      <form id="upload-form">
+        <div class="dz" id="drop-zone">
+          <div class="dz-text">Drag a file here, or click to browse</div>
+          <div class="dz-sub">PDF, DOCX, PPTX — anything your clients need</div>
+        </div>
+        <input type="file" id="file-input" style="display:none;">
+        <div class="grid grid-2" style="gap:16px;">
+          <div class="field">
+            <label for="up-title">Title</label>
+            <input type="text" id="up-title" required>
+          </div>
+          <div class="field">
+            <label for="up-category">Visible to</label>
+            <select id="up-category">
+              <option value="general">Everyone (General)</option>
+              <option value="gp">General Dentists</option>
+              <option value="specialist">Specialists</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="up-desc">Short description (optional)</label>
+          <input type="text" id="up-desc">
+        </div>
+        <button type="submit" class="btn btn-primary">Upload</button>
+        <p id="upload-status" style="margin:12px 0 0; font-size:0.85rem;"></p>
+      </form>
+    </div>
+
+    <div id="resource-list"></div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/resources.js"></script>
+</body>
+</html>
