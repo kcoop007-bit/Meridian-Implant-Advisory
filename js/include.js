@@ -17,6 +17,21 @@
     });
   }
 
+  function wireAuthAwareNav() {
+    var link = document.querySelector('[data-nav="login"]');
+    if (!link) return;
+    var client = window.getSupabaseClient && window.getSupabaseClient();
+    if (!client) return; // Supabase not loaded/configured on this page yet
+    client.auth.getSession().then(function (res) {
+      var session = res && res.data && res.data.session;
+      if (session) {
+        link.textContent = "Resources";
+        link.setAttribute("href", "/resources.html");
+        link.setAttribute("data-nav", "resources");
+      }
+    });
+  }
+
   function wireNavToggle() {
     var toggle = document.getElementById("navToggle");
     var nav = document.getElementById("primaryNav");
@@ -47,6 +62,7 @@
     loadPartial("#header-slot", "/partials/header.html", function () {
       markCurrentNav();
       wireNavToggle();
+      wireAuthAwareNav();
     });
     loadPartial("#footer-slot", "/partials/footer.html", function () {
       var y = document.getElementById("year");
