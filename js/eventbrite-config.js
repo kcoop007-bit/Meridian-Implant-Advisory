@@ -7,4 +7,4 @@
 // This just iframes your existing Eventbrite profile, so all
 // ticketing/registration/payment stays on Eventbrite, unchanged.
 // ---------------------------------------------------------------
-window.MERIDIAN_EVENTBRITE_ORG_URL = "";
+window.MERIDIAN_EVENTBRITE_ORG_URL = "https://www.eventbrite.com/o/106602573801";
