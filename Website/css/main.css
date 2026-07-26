@@ -18,8 +18,10 @@
   --gold-dim: #8C6D42;
   --white: #FFFFFF;
 
-  --serif: "Fraunces", Georgia, "Times New Roman", serif;
-  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Type system matches the printed Playbook + the logo:
+     Cormorant (display, matches "MERIDIAN"), Helvetica (body, matches "IMPLANT ADVISORY"). */
+  --serif: "Cormorant", Georgia, "Times New Roman", serif;
+  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --container: 1180px;
   --radius: 4px;
@@ -42,15 +44,17 @@ img { max-width: 100%; display: block; }
 h1, h2, h3, h4 {
   font-family: var(--serif);
   font-weight: 600;
-  line-height: 1.12;
+  line-height: 1.14;
   margin: 0 0 0.5em;
   color: var(--ink);
-  letter-spacing: -0.01em;
+  letter-spacing: 0; /* Cormorant reads best at natural tracking */
 }
-h1 { font-size: clamp(2.4rem, 4.4vw, 3.9rem); font-weight: 500; }
-h2 { font-size: clamp(1.9rem, 3vw, 2.6rem); font-weight: 500; }
-h3 { font-size: 1.35rem; }
-h4 { font-size: 1.05rem; }
+/* Cormorant is a lighter, smaller-on-the-body serif than Fraunces, so display
+   sizes are nudged up a touch and big titles use weight 500 for presence. */
+h1 { font-size: clamp(2.7rem, 4.8vw, 4.3rem); font-weight: 500; }
+h2 { font-size: clamp(2.1rem, 3.2vw, 2.9rem); font-weight: 500; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.15rem; }
 
 p { margin: 0 0 1.1em; color: var(--text-soft); }
 p.lead { font-size: 1.2rem; color: var(--text-soft); line-height: 1.6; }
@@ -132,10 +136,14 @@ header.site-header {
   text-decoration: none;
   letter-spacing: 0.01em;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 .brand .brand-mark { color: var(--gold-light); }
+/* Logo lockup (globe + wordmark) — sits on the dark header/footer */
+.brand-logo { height: 46px; width: auto; display: block; }
+.footer-logo { height: 58px; margin-bottom: 14px; }
+@media (max-width: 880px) { .brand-logo { height: 40px; } }
 nav.primary-nav { display: flex; align-items: center; gap: 8px; }
 nav.primary-nav a {
   color: rgba(255,255,255,0.82);
