@@ -28,6 +28,15 @@
     hide("#loading"); show("#panel");
 
     if (!editable) {
+      // Back link to this account's page (admin drill-down).
+      var back = document.createElement("a");
+      back.href = "/account.html?user=" + targetUserId;
+      back.className = "btn btn-outline-dark btn-sm";
+      back.textContent = "← Back to account";
+      back.style.cssText = "display:inline-block; margin-bottom:16px;";
+      var panel = document.getElementById("panel");
+      panel.insertBefore(back, panel.firstChild);
+
       var banner = document.getElementById("admin-banner");
       banner.style.display = "block";
       banner.textContent = "Admin view — showing this client's goals (read-only).";

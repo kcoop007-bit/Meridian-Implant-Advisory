@@ -3,25 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>User Access — Meridian Implant Advisory</title>
+<title>Account — Meridian Implant Advisory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/main.css">
 <style>
   .user-card { padding: 20px 22px; margin-bottom: 14px; }
-  .user-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
   .access-row { display:flex; flex-wrap:wrap; gap:18px; margin-top:14px; padding-top:14px; border-top:1px solid var(--paper-line); }
   .access-row label { display:flex; align-items:center; gap:7px; font-size:0.88rem; color:var(--text-soft); cursor:pointer; margin:0; }
   .access-row input { width:auto; }
   .muted { color:var(--text-faint); font-size:0.82rem; }
   .revoked-pill { color:#B4423C; font-weight:600; font-size:0.78rem; }
+  .kv { display:flex; gap:8px; font-size:0.9rem; margin:4px 0; }
+  .kv .k { color:var(--text-faint); min-width:120px; }
 </style>
 </head>
 <body>
 
 <div id="header-slot"></div>
-<div id="account-nav-slot"></div>
 
 <section class="soft" id="loading" style="padding:96px 0; text-align:center;">
   <div class="container"><p>Loading...</p></div>
@@ -46,13 +46,28 @@
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:16px;">
       <div>
         <span class="eyebrow">Admin Portal</span>
-        <h1 style="font-size:2.1rem;">Accounts</h1>
-        <p style="margin:0; color:var(--text-faint); font-size:0.9rem;">Every registered account. Open one to manage its access or view its Goals &amp; KPIs.</p>
+        <h1 style="font-size:2.1rem;" id="acct-title">Account</h1>
+        <p style="margin:0; color:var(--text-faint); font-size:0.9rem;" id="acct-sub"></p>
       </div>
-      <a href="/resources.html" class="btn btn-outline-dark btn-sm">← Resources</a>
+      <a href="/admin.html" class="btn btn-outline-dark btn-sm">← Accounts</a>
     </div>
     <p id="status" style="font-size:0.85rem; min-height:1.1em; margin:0 0 20px;"></p>
-    <div id="user-list"></div>
+
+    <div class="card user-card" id="profile-card"></div>
+
+    <div class="card user-card" id="access-card" style="display:none;">
+      <h3 style="margin:0 0 4px;">Resource access</h3>
+      <p class="muted" style="margin:0;">Turn access on or off. Changes take effect on their next request — no logout needed.</p>
+      <div id="access-controls"></div>
+    </div>
+
+    <div class="card user-card" style="display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div>
+        <h3 style="margin:0 0 2px;">Goals &amp; KPIs</h3>
+        <p class="muted" style="margin:0;">This account's baseline, targets, progress and notes.</p>
+      </div>
+      <a id="goals-link" class="btn btn-primary btn-sm" href="#">View Goals &amp; KPIs →</a>
+    </div>
   </div>
 </section>
 
@@ -62,7 +77,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="/js/supabase-config.js"></script>
 <script src="/js/auth.js"></script>
-<script src="/js/access-logic.js"></script>
-<script src="/js/admin.js"></script>
+<script src="/js/account.js"></script>
 </body>
 </html>

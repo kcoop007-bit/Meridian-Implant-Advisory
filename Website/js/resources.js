@@ -25,7 +25,14 @@
     });
 
     var isAdmin = auth.profile && auth.profile.role === "admin";
-    if (isAdmin) { show("#admin-panel"); wireUpload(client); }
+    if (isAdmin) {
+      show("#admin-panel");
+      wireUpload(client);
+      var eb = document.getElementById("portal-eyebrow");
+      if (eb) eb.textContent = "Admin Portal";
+      var pt = document.getElementById("portal-title");
+      if (pt) pt.textContent = "Resources";
+    }
 
     await loadResources(client, auth.profile, isAdmin);
   }

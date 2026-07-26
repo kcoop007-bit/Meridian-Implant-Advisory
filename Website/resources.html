@@ -44,8 +44,8 @@
   <div class="container">
     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:44px; flex-wrap:wrap; gap:16px;">
       <div>
-        <span class="eyebrow">Client Portal</span>
-        <h1 style="font-size:2.1rem;">Your resources</h1>
+        <span class="eyebrow" id="portal-eyebrow">Client Portal</span>
+        <h1 style="font-size:2.1rem;" id="portal-title">Your resources</h1>
         <p style="margin:0; color:var(--text-faint); font-size:0.9rem;">Signed in as <span id="user-email"></span></p>
       </div>
       <button id="logout-btn" class="btn btn-outline-dark btn-sm">Log Out</button>
@@ -54,9 +54,10 @@
     <div id="admin-panel" class="card" style="display:none; margin-bottom:48px;">
       <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
         <span class="badge">Admin</span>
-        <a href="/admin.html" class="btn btn-outline-dark btn-sm">Manage user access →</a>
+        <a href="/admin.html" class="btn btn-outline-dark btn-sm">Accounts →</a>
       </div>
       <h3>Add a resource</h3>
+      <p style="margin:-6px 0 16px; color:var(--text-faint); font-size:0.85rem;">Choose <strong>Everyone (General)</strong> under "Visible to" for anything all clients should see.</p>
       <form id="upload-form">
         <div class="dz" id="drop-zone">
           <div class="dz-text">Drag a file here, or click to browse</div>
