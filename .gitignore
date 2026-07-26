@@ -1,0 +1,19 @@
+# ─────────────────────────────────────────────────────────────
+# This Git repo should contain ONLY the website (the "Website" folder).
+# Everything else in the Meridian Implant Advisory project folder
+# (booklet PDFs, Legal, Logo, Client Development, status logs, etc.)
+# is private business material and must NOT be pushed to GitHub.
+#
+# Rule below: ignore everything at the project root, then explicitly
+# allow back just the Website folder and this .gitignore file.
+# ─────────────────────────────────────────────────────────────
+
+# Ignore everything at the root of the project...
+/*
+
+# ...but keep the website and this file.
+!/Website/
+!/.gitignore
+
+# Never track macOS Finder junk, even inside Website/
+.DS_Store

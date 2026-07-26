@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a Session — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="header-slot"></div>
+<div id="account-nav-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;"><div class="container"><p>Loading...</p></div></section>
+<section id="not-configured" style="display:none; padding:96px 0;"><div class="container narrow center"><h2>Not available yet</h2></div></section>
+
+<section id="panel" style="display:none; padding:56px 0 100px;">
+  <div class="container" style="max-width:900px;">
+    <span class="eyebrow">Your Account</span>
+    <h1 style="font-size:2.1rem;">Book a session</h1>
+    <p style="color:var(--text-soft);">Choose what you'd like to book — availability updates live from the calendar, so you'll only see open times.</p>
+
+    <div id="type-cards" class="grid grid-2" style="gap:16px; margin:24px 0 8px;"></div>
+    <p id="no-types" style="display:none; color:var(--text-faint);">No session types are set up yet.</p>
+
+    <div id="calendly-container" style="margin-top:24px;"></div>
+
+    <!-- Admin: add/manage session types -->
+    <div id="admin-card" class="card no-print" style="display:none; margin-top:48px;">
+      <span class="badge" style="margin-bottom:14px;">Admin</span>
+      <h3 style="margin-top:0;">Add a session type</h3>
+      <p style="font-size:0.85rem; color:var(--text-faint); margin-top:-4px;">Paste the Calendly event link for each type (from Calendly → your event → Copy link).</p>
+      <form id="type-form">
+        <div class="grid grid-2" style="gap:16px;">
+          <div class="field"><label for="bt-label">Name</label><input type="text" id="bt-label" required placeholder="Discovery Call"></div>
+          <div class="field"><label for="bt-slug">Short id</label><input type="text" id="bt-slug" required placeholder="discovery"></div>
+        </div>
+        <div class="grid grid-2" style="gap:16px;">
+          <div class="field"><label for="bt-duration">Duration (min)</label><input type="number" id="bt-duration" placeholder="30"></div>
+          <div class="field"><label for="bt-url">Calendly link</label><input type="url" id="bt-url" placeholder="https://calendly.com/you/discovery"></div>
+        </div>
+        <div class="field"><label for="bt-desc">Short description</label><input type="text" id="bt-desc"></div>
+        <button type="submit" class="btn btn-primary">Add session type</button>
+        <p id="bt-status" style="margin:12px 0 0; font-size:0.85rem;"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/booking.js"></script>
+</body>
+</html>

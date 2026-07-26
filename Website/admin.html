@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Access — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .user-card { padding: 20px 22px; margin-bottom: 14px; }
+  .user-top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+  .access-row { display:flex; flex-wrap:wrap; gap:18px; margin-top:14px; padding-top:14px; border-top:1px solid var(--paper-line); }
+  .access-row label { display:flex; align-items:center; gap:7px; font-size:0.88rem; color:var(--text-soft); cursor:pointer; margin:0; }
+  .access-row input { width:auto; }
+  .muted { color:var(--text-faint); font-size:0.82rem; }
+  .revoked-pill { color:#B4423C; font-weight:600; font-size:0.78rem; }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+<div id="account-nav-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;">
+  <div class="container"><p>Loading...</p></div>
+</section>
+
+<section id="not-configured" style="display:none; padding:96px 0;">
+  <div class="container narrow center">
+    <h2>Not available</h2>
+    <p>This area isn't wired up yet.</p>
+  </div>
+</section>
+
+<section id="denied" style="display:none; padding:96px 0;">
+  <div class="container narrow center">
+    <h2>Admins only</h2>
+    <p>You don't have access to this page. <a href="/resources.html" style="color:var(--gold-dim); font-weight:600;">Back to resources</a>.</p>
+  </div>
+</section>
+
+<section id="panel" style="display:none; padding:64px 0 100px;">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; flex-wrap:wrap; gap:16px;">
+      <div>
+        <span class="eyebrow">Admin</span>
+        <h1 style="font-size:2.1rem;">User access</h1>
+        <p style="margin:0; color:var(--text-faint); font-size:0.9rem;">Turn access on or off per client. Changes take effect on their next request — no logout needed.</p>
+      </div>
+      <a href="/resources.html" class="btn btn-outline-dark btn-sm">← Resources</a>
+    </div>
+    <p id="status" style="font-size:0.85rem; min-height:1.1em; margin:0 0 20px;"></p>
+    <div id="user-list"></div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/access-logic.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

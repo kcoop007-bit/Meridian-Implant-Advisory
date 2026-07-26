@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Practice Onboarding — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .waiver-box {
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    background: var(--paper-soft);
+    padding: 20px 22px;
+    max-height: 260px;
+    overflow-y: auto;
+    font-size: 0.85rem;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .waiver-box h4 { margin: 14px 0 6px; font-size: 0.92rem; color: var(--ink); }
+  .waiver-box h4:first-child { margin-top: 0; }
+  .accept-row { display:flex; align-items:flex-start; gap:10px; margin-bottom:20px; }
+  .accept-row input { width:auto; margin-top:3px; }
+  .accept-row label { margin:0; font-size:0.9rem; color:var(--text); cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;">
+  <div class="container"><p>Loading...</p></div>
+</section>
+
+<section id="not-configured" style="display:none; padding:96px 0;">
+  <div class="container narrow center">
+    <h2>Not available yet</h2>
+    <p>This isn't wired up yet. <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">Get in touch</a>.</p>
+  </div>
+</section>
+
+<section id="onboard" style="display:none; padding:64px 0 100px;">
+  <div class="container" style="max-width:760px;">
+    <span class="eyebrow">Welcome</span>
+    <h1 style="font-size:2.1rem;">Let's set up your practice</h1>
+    <p style="color:var(--text-soft); max-width:600px;">A few questions so every recommendation is tailored to where your practice actually is. Takes about 5 minutes. Signed in as <span id="user-email" style="color:var(--text-faint);"></span>.</p>
+
+    <p id="already-done" style="display:none; color:#2E7D4F; font-size:0.9rem;">You've completed onboarding — you can update your answers below anytime.</p>
+
+    <form id="onboard-form" style="margin-top:28px;">
+
+      <div class="field">
+        <label for="ob-goals">What are your top goals for your implant practice?</label>
+        <textarea id="ob-goals" rows="4" placeholder="From your Goals worksheet — e.g., predictable single-implant volume, first full-arch case, lower no-show rate…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="ob-bottlenecks">What are your biggest current operational bottlenecks?</label>
+        <textarea id="ob-bottlenecks" rows="4" placeholder="e.g., consults not converting, scheduling gaps, case-acceptance, staff bandwidth…"></textarea>
+      </div>
+
+      <div class="grid grid-2" style="gap:16px;">
+        <div class="field">
+          <label for="ob-doctors">How many doctors are in the practice?</label>
+          <input type="number" id="ob-doctors" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="ob-tc">Do you have a dedicated treatment coordinator?</label>
+          <select id="ob-tc">
+            <option value="">—</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="ob-staff">Briefly, what does your team look like? (roles &amp; counts)</label>
+        <input type="text" id="ob-staff" placeholder="e.g., 1 doctor, 2 hygienists, 3 assistants, 1 front desk">
+      </div>
+
+      <div class="field">
+        <label for="ob-prior">What other systems, programs, or consultants have you tried before?</label>
+        <textarea id="ob-prior" rows="3" placeholder="What you've tried, and what did or didn't work about it."></textarea>
+      </div>
+
+      <h3 style="margin-top:32px;">Acknowledgment &amp; Waiver</h3>
+      <p style="font-size:0.85rem; color:var(--text-faint); margin-top:-4px;">Please read and accept before continuing.</p>
+      <div class="waiver-box" id="waiver-box">
+        <h4>Educational purpose only</h4>
+        <p>The Meridian Implant Advisory program, booklet, templates, scripts, and all related materials are provided for educational and informational purposes only. They are not a substitute for formal clinical training, professional judgment, individualized diagnosis, or the standard of care required to practice implant dentistry.</p>
+        <h4>Clinical responsibility</h4>
+        <p>All diagnostic, treatment, surgical, prosthetic, coding, billing, and business decisions — and all clinical applications of any material provided — are the sole responsibility of the licensed clinician and the practice. Nothing here creates a doctor–patient, consultant–client, or other professional relationship, and no specific outcome, revenue, case-acceptance, or complication result is guaranteed.</p>
+        <h4>Not legal, financial, tax, or coding advice</h4>
+        <p>Content addressing insurance coding, billing, fee-for-service, financing, and consent documentation is educational only. You are responsible for verifying all codes and for having consent forms, financial-disclosure letters, and billing practices reviewed by your own legal counsel and qualified advisors before use.</p>
+        <h4>Limitation of liability &amp; assumption of risk</h4>
+        <p>To the fullest extent permitted by law, Meridian Implant Advisory and its owners, officers, members, employees, contractors, agents, instructors, and licensors are not liable for any injury, loss, or damage arising from use of the materials. You accept sole responsibility for your use of the materials and agree to release and hold harmless the foregoing parties accordingly.</p>
+        <h4>Intellectual property</h4>
+        <p>All materials are the property of Meridian Implant Advisory and are licensed for use only within your own practice. They may not be resold, redistributed, or used to provide services to third parties without written permission.</p>
+        <p style="color:var(--text-faint);"><em>This is a summary. The full Legal Notices govern and are being finalized with counsel.</em></p>
+      </div>
+
+      <div class="accept-row">
+        <input type="checkbox" id="ob-accept">
+        <label for="ob-accept">I have read and accept the Acknowledgment &amp; Waiver above on behalf of my practice.</label>
+      </div>
+
+      <button type="submit" id="ob-submit" class="btn btn-primary" disabled>Complete onboarding</button>
+      <p id="ob-status" style="margin:14px 0 0; font-size:0.85rem;"></p>
+    </form>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/onboarding.js"></script>
+</body>
+</html>

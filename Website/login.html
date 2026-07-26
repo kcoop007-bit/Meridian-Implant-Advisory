@@ -34,6 +34,7 @@
         </div>
         <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center;">Log In</button>
         <p id="login-status" style="margin:14px 0 0; font-size:0.85rem;"></p>
+        <p style="margin:12px 0 0; font-size:0.85rem;"><a href="/reset-password.html" style="color:var(--gold-dim); font-weight:600;">Forgot password?</a></p>
       </form>
 
       <p style="margin-top:24px; font-size:0.85rem; color:var(--text-faint);">Don't have an account? <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">Get in touch</a> to request access.</p>
@@ -73,6 +74,13 @@
         status.textContent = error.message;
         status.style.color = "#B4423C";
       } else {
+        // Ask the browser's password manager to offer to save these credentials.
+        try {
+          if (window.PasswordCredential && navigator.credentials) {
+            var cred = new window.PasswordCredential({ id: email, password: password, name: email });
+            await navigator.credentials.store(cred);
+          }
+        } catch (e) { /* non-fatal */ }
         window.location.href = "/resources.html";
       }
     });

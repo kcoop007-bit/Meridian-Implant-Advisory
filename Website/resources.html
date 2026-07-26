@@ -27,6 +27,7 @@
 <body>
 
 <div id="header-slot"></div>
+<div id="account-nav-slot"></div>
 
 <section class="soft" id="loading" style="padding:96px 0; text-align:center;">
   <div class="container"><p>Loading...</p></div>
@@ -51,7 +52,10 @@
     </div>
 
     <div id="admin-panel" class="card" style="display:none; margin-bottom:48px;">
-      <span class="badge" style="margin-bottom:16px;">Admin</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px;">
+        <span class="badge">Admin</span>
+        <a href="/admin.html" class="btn btn-outline-dark btn-sm">Manage user access →</a>
+      </div>
       <h3>Add a resource</h3>
       <form id="upload-form">
         <div class="dz" id="drop-zone">
@@ -73,10 +77,31 @@
             </select>
           </div>
         </div>
+        <div class="grid grid-2" style="gap:16px;">
+          <div class="field">
+            <label for="up-audience">Document type</label>
+            <select id="up-audience">
+              <option value="">— (general / unclassified)</option>
+              <option value="staff">Staff Document</option>
+              <option value="patient">Patient Document</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="up-module">Training module (optional)</label>
+            <input type="text" id="up-module" list="module-list" placeholder="e.g., Training Booklet">
+            <datalist id="module-list">
+              <option value="Training Booklet"></option>
+            </datalist>
+          </div>
+        </div>
         <div class="field">
           <label for="up-desc">Short description (optional)</label>
           <input type="text" id="up-desc">
         </div>
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.88rem; color:var(--text-soft); margin-bottom:14px; cursor:pointer;">
+          <input type="checkbox" id="up-pinned" style="width:auto;">
+          Pin to the top of the page (use for the Training Booklet)
+        </label>
         <button type="submit" class="btn btn-primary">Upload</button>
         <p id="upload-status" style="margin:12px 0 0; font-size:0.85rem;"></p>
       </form>

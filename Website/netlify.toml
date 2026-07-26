@@ -1,0 +1,12 @@
+# Netlify configuration for meridianimplantadvisory.com
+# (This site is served from the Website/ folder.)
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# The reminder dispatcher runs every hour and sends any reminders due that
+# hour (Eastern). Schedule is also declared in the function via
+# `export const config = { schedule: "@hourly" }` — either is sufficient.
+[functions."reminder-dispatch"]
+  schedule = "@hourly"

@@ -64,6 +64,11 @@
       wireNavToggle();
       wireAuthAwareNav();
     });
+    loadPartial("#account-nav-slot", "/partials/account-nav.html", function () {
+      var path = window.location.pathname.split("/").pop() || "";
+      var el = document.querySelector('#account-nav-slot [data-acct="' + path + '"]');
+      if (el) el.classList.add("current");
+    });
     loadPartial("#footer-slot", "/partials/footer.html", function () {
       var y = document.getElementById("year");
       if (y) y.textContent = new Date().getFullYear();

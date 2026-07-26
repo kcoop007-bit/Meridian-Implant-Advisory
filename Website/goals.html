@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goals &amp; KPIs — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .kpi-table { width:100%; border-collapse:collapse; margin-bottom:10px; font-size:0.9rem; }
+  .kpi-table th { text-align:left; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-faint); padding:8px 10px; border-bottom:1px solid var(--paper-line); }
+  .kpi-table td { padding:10px; border-bottom:1px solid var(--paper-line); vertical-align:middle; }
+  .kpi-table input { width:100%; padding:6px 8px; font-size:0.88rem; }
+  .kpi-table input.narrow { max-width:90px; }
+  .bar-wrap { background:var(--paper-line); border-radius:20px; height:8px; overflow:hidden; min-width:80px; }
+  .bar-fill { height:100%; background:var(--gold); border-radius:20px; }
+  .period-block { margin-bottom:40px; }
+  @media print {
+    #header-slot, #account-nav-slot, #footer-slot, .no-print { display:none !important; }
+    body { background:#fff; }
+  }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+<div id="account-nav-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;"><div class="container"><p>Loading...</p></div></section>
+<section id="not-configured" style="display:none; padding:96px 0;"><div class="container narrow center"><h2>Not available yet</h2></div></section>
+
+<section id="panel" style="display:none; padding:56px 0 100px;">
+  <div class="container" style="max-width:960px;">
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+      <div>
+        <span class="eyebrow">Your Account</span>
+        <h1 style="font-size:2.1rem;">Goals &amp; KPIs</h1>
+        <p id="subtitle" style="color:var(--text-soft); margin:0;">Track your goals from the worksheets — baseline, target, progress, and notes — across every time horizon.</p>
+      </div>
+      <div class="no-print" style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button id="export-csv" class="btn btn-outline-dark btn-sm">Export CSV</button>
+        <button id="export-pdf" class="btn btn-outline-dark btn-sm">Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div id="admin-banner" style="display:none; margin:16px 0; padding:12px 16px; background:var(--paper-soft); border:1px solid var(--paper-line); border-radius:var(--radius); font-size:0.88rem; color:var(--text-soft);"></div>
+
+    <div class="card" style="margin:24px 0 36px;">
+      <h3 style="margin-top:0;">Progress overview</h3>
+      <canvas id="kpi-chart" height="110"></canvas>
+      <p id="chart-empty" style="display:none; color:var(--text-faint); font-size:0.9rem;">Add goals below to see your progress chart.</p>
+    </div>
+
+    <div class="card no-print" id="add-card" style="margin-bottom:36px;">
+      <h3 style="margin-top:0;">Add a goal / KPI</h3>
+      <form id="goal-form">
+        <div class="grid grid-2" style="gap:16px;">
+          <div class="field">
+            <label for="gf-period">Time horizon</label>
+            <select id="gf-period">
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+              <option value="monthly">Monthly</option>
+              <option value="quarterly">Quarterly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="gf-name">Goal / KPI name</label>
+            <input type="text" id="gf-name" required placeholder="e.g., Case acceptance %">
+          </div>
+        </div>
+        <div class="grid grid-3" style="gap:16px;">
+          <div class="field"><label for="gf-baseline">Baseline</label><input type="number" step="any" id="gf-baseline"></div>
+          <div class="field"><label for="gf-target">Goal / target</label><input type="number" step="any" id="gf-target"></div>
+          <div class="field"><label for="gf-unit">Unit (optional)</label><input type="text" id="gf-unit" placeholder="%, cases, $"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Add goal</button>
+        <p id="goal-status" style="margin:12px 0 0; font-size:0.85rem;"></p>
+      </form>
+    </div>
+
+    <div id="periods"></div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/goals.js"></script>
+</body>
+</html>
