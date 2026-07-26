@@ -202,7 +202,7 @@ section.hero {
   /* Globe logo as a faint background wash (Option C1), layered over the navy,
      sitting behind the decorative rings (::before/::after) and the content. */
   background:
-    url('/assets/images/meridian-globe-watermark.png') no-repeat right -30px top 70px / 460px auto,
+    url('/assets/images/meridian-globe-watermark.png') no-repeat right 120px top 215px / 500px auto,
     radial-gradient(1100px 620px at 82% -10%, rgba(184,147,95,0.16), transparent 60%),
     var(--ink);
   color: var(--white);
