@@ -199,12 +199,18 @@ section.dark h1, section.dark h2, section.dark h3, section.dark h4 { color: var(
 section.dark p { color: rgba(255,255,255,0.72); }
 section.soft { background: var(--paper-soft); }
 section.hero {
-  background: radial-gradient(1100px 620px at 82% -10%, rgba(184,147,95,0.16), transparent 60%), var(--ink);
+  /* Globe logo as a faint background wash (Option C1), layered over the navy,
+     sitting behind the decorative rings (::before/::after) and the content. */
+  background:
+    url('/assets/images/meridian-globe-watermark.png') no-repeat right -30px top 70px / 460px auto,
+    radial-gradient(1100px 620px at 82% -10%, rgba(184,147,95,0.16), transparent 60%),
+    var(--ink);
   color: var(--white);
   padding: 132px 0 110px;
   position: relative;
   overflow: hidden;
 }
+@media (max-width: 820px) { section.hero { background-size: 300px auto, auto, auto; } }
 section.hero::after {
   content: "";
   position: absolute;
