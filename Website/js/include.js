@@ -7,6 +7,7 @@
       "general-dentists.html": "gp",
       "specialists.html": "specialists",
       "events.html": "events",
+      "become-client.html": "become",
       "login.html": "login",
       "resources.html": "login"
     };
