@@ -115,13 +115,22 @@ export default async (req) => {
       const rows = await sb("profiles?select=id&email=eq." + encodeURIComponent(email));
       if (rows && rows.length) userId = rows[0].id; else throw new Error("could not create or find user " + email);
     }
-    await sb("profiles?id=eq." + userId, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ membership_tier: tier, is_active: true }) });
-    await sb("memberships?on_conflict=stripe_session_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ user_id: userId, tier, stripe_session_id: sessionId, stripe_customer: s.customer || null, amount_total: s.amount_total || null }]) });
+    // Stamp the tier + record the purchase — best-effort, so a DB hiccup (e.g.
+    // a not-yet-run migration) can never block the welcome email below.
+    try {
+      await sb("profiles?id=eq." + userId, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ membership_tier: tier, is_active: true }) });
+    } catch (e) { console.error("stripe-webhook profile patch:", String((e && e.message) || e)); }
+    try {
+      await sb("memberships?on_conflict=stripe_session_id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" }, body: JSON.stringify([{ user_id: userId, tier, stripe_session_id: sessionId, stripe_customer: s.customer || null, amount_total: s.amount_total || null }]) });
+    } catch (e) { console.error("stripe-webhook membership insert:", String((e && e.message) || e)); }
 
     // #3 — generate a set-password link and send the branded welcome email.
     const site = process.env.SITE_URL || "https://meridianimplantadvisory.com";
-    const link = await gotrue("admin/generate_link", { method: "POST", body: JSON.stringify({ type: "recovery", email, redirect_to: site + "/reset-password.html" }) });
-    const actionLink = (link.body && (link.body.action_link || (link.body.properties && link.body.properties.action_link))) || (site + "/reset-password.html");
+    let actionLink = site + "/reset-password.html";
+    try {
+      const link = await gotrue("admin/generate_link", { method: "POST", body: JSON.stringify({ type: "recovery", email, redirect_to: site + "/reset-password.html" }) });
+      actionLink = (link.body && (link.body.action_link || (link.body.properties && link.body.properties.action_link))) || actionLink;
+    } catch (e) { console.error("stripe-webhook generate_link:", String((e && e.message) || e)); }
     await sendWelcomeEmail(email, tier, actionLink);
 
     return ok("provisioned");
