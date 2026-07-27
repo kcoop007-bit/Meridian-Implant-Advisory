@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .tier-pill { display:inline-block; background:rgba(184,147,95,0.14); color:var(--gold-dim); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; font-size:0.78rem; padding:5px 14px; border-radius:100px; }
+  .steps { list-style:none; padding:0; margin:26px 0 0; }
+  .steps li { display:flex; gap:14px; padding:14px 0; border-top:1px solid var(--paper-line); align-items:flex-start; }
+  .steps .n { flex:0 0 26px; height:26px; border-radius:50%; border:1px solid var(--gold-dim); color:var(--gold); font-family:var(--serif); display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+  .steps .t { font-size:0.95rem; color:var(--text-soft); }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="soft" id="loading" style="padding:110px 0; text-align:center;">
+  <div class="container"><p>Confirming your enrollment…</p></div>
+</section>
+
+<section id="error-state" style="display:none; padding:96px 0;">
+  <div class="container narrow center">
+    <h2>We couldn't confirm this checkout</h2>
+    <p id="error-msg" style="color:var(--text-soft);">If you were charged, don't worry — nothing is lost. <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">Contact us</a> and we'll get you set up right away.</p>
+  </div>
+</section>
+
+<section id="welcome" style="display:none; padding:72px 0 100px;">
+  <div class="container narrow">
+    <span class="eyebrow">Payment received</span>
+    <h1 style="font-size:2.3rem; margin-bottom:8px;">You're enrolled — <span id="wl-tier" class="tier-pill">—</span></h1>
+    <p style="color:var(--text-soft); font-size:1.05rem;">Thank you for becoming a Meridian client. We've just emailed <strong id="wl-email">your inbox</strong> a secure link to set your password and open your portal.</p>
+
+    <ol class="steps">
+      <li><span class="n">1</span><span class="t"><strong>Check your email</strong> (and your spam folder, just in case) for "Welcome to Meridian — set your password."</span></li>
+      <li><span class="n">2</span><span class="t"><strong>Set your password</strong> using the link, and you'll be signed into your portal.</span></li>
+      <li><span class="n">3</span><span class="t"><strong>Answer a few quick questions</strong> about your practice so we can tailor everything to you.</span></li>
+    </ol>
+
+    <p style="color:var(--text-faint); font-size:0.9rem; margin-top:28px;">Didn't get the email within a few minutes? <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">Contact us</a> and we'll sort it out — your account is already created.</p>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="/js/welcome.js"></script>
+</body>
+</html>

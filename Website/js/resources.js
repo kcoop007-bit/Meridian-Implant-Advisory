@@ -16,6 +16,14 @@
     var auth = await window.MeridianAuth.requireLogin("/login.html");
     if (!auth.user) return; // requireLogin already redirected
 
+    // First-login onboarding gate: a non-admin client who hasn't completed the
+    // onboarding questionnaire is sent there before seeing the portal.
+    var isAdminEarly = auth.profile && auth.profile.role === "admin";
+    if (!isAdminEarly) {
+      var ob = await client.from("onboarding_responses").select("user_id").eq("user_id", auth.user.id).maybeSingle();
+      if (!ob.error && !ob.data) { window.location.href = "/onboarding.html"; return; }
+    }
+
     hide("#loading");
     show("#portal");
 

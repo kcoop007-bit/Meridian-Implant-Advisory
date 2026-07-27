@@ -6,8 +6,9 @@
 // contact section so the page never shows a dead button.
 //
 // In Stripe, set each Payment Link's "After payment" to redirect to:
-//   https://meridianimplantadvisory.com/onboarding.html
-// so paying clients land on the onboarding questionnaire automatically.
+//   https://meridianimplantadvisory.com/welcome.html?session_id={CHECKOUT_SESSION_ID}
+// so paying clients land on the automated welcome/onboarding page, which
+// verifies the payment and creates their account with the correct tier.
 // ─────────────────────────────────────────────────────────────
 window.MERIDIAN_PRICING = {
   fallback: "/index.html#contact",
