@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule your sessions — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .sched-wrap { max-width: 820px; }
+  .steps-rail { display:flex; gap:8px; flex-wrap:wrap; margin:18px 0 26px; }
+  .pill { font-size:0.8rem; padding:6px 12px; border-radius:999px; border:1px solid var(--paper-line); color:var(--text-faint); }
+  .pill.done { background:var(--gold-dim,#B8863B); color:#fff; border-color:transparent; }
+  .pill.current { border-color:var(--gold-dim,#B8863B); color:var(--gold-dim,#B8863B); font-weight:600; }
+  .sess-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+  .sess-head .dur { color:var(--text-faint); font-size:0.9rem; }
+  .day-block { margin:18px 0 8px; }
+  .day-block .day-label { font-weight:600; color:var(--text-soft); margin-bottom:8px; }
+  .slot-grid { display:flex; flex-wrap:wrap; gap:8px; }
+  .slot { border:1px solid var(--paper-line); background:#fff; border-radius:8px; padding:8px 12px; font-size:0.9rem; cursor:pointer; }
+  .slot:hover { border-color:var(--gold-dim,#B8863B); }
+  .summary-row { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--paper-line); }
+  .summary-row .when { color:var(--text-soft); }
+  .muted { color:var(--text-faint); font-size:0.9rem; }
+  .err { color:#B4423C; }
+  .ok { color:#2E7D4F; }
+  .btn-link { background:none; border:none; color:var(--gold-dim,#B8863B); cursor:pointer; font-size:0.85rem; padding:0; }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="hero" style="padding:96px 0 40px;">
+  <div class="container sched-wrap">
+    <span class="eyebrow">Gold implementation</span>
+    <h1 style="max-width:620px;">Schedule your six sessions.</h1>
+    <p class="lead narrow" style="max-width:560px;">Pick a time for each session in order. We space them two to three weeks apart, and only show times your consultant is free.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container sched-wrap">
+    <div id="loading" class="muted">Loading your availability…</div>
+    <div id="not-gold" style="display:none;">
+      <p>Session scheduling is part of the <strong>Gold</strong> program. If you believe you're seeing this in error, <a href="/index.html#contact">get in touch</a>.</p>
+      <p><a href="/resources.html">← Back to your portal</a></p>
+    </div>
+    <div id="wizard" style="display:none;">
+      <div class="steps-rail" id="rail"></div>
+      <div id="picker"></div>
+    </div>
+    <div id="review" style="display:none;">
+      <h3>Confirm your schedule</h3>
+      <div id="summary"></div>
+      <p id="review-msg" class="muted" style="margin-top:14px;"></p>
+      <div style="margin-top:18px; display:flex; gap:12px; align-items:center;">
+        <button id="confirm-btn" class="btn btn-dark">Confirm all six sessions</button>
+        <button id="restart-btn" class="btn-link">Start over</button>
+      </div>
+    </div>
+    <div id="done" style="display:none;">
+      <h3 class="ok">You're booked.</h3>
+      <p>All six sessions are on the calendar and your consultant has been notified. You'll find them in your portal any time.</p>
+      <div id="done-list"></div>
+      <p style="margin-top:18px;"><a href="/resources.html" class="btn btn-dark">Go to your portal</a></p>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/scheduling-config.js"></script>
+<script>
+(function () {
+  var CFG = window.MERIDIAN_SCHED;
+  var client, authToken, practiceLabel = "", address = "";
+  var busy = [];          // [[startMs,endMs],...]
+  var picks = [];         // [{n, startMs, dur}]
+  var nowMs = Date.now();
+
+  // ---- ET helpers (mirror the server) ----
+  function etOffset(ms) {
+    var f = new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, hour12: false, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    var p = {}; f.formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+    var h = p.hour === "24" ? 0 : +p.hour;
+    return Math.round((Date.UTC(+p.year, +p.month - 1, +p.day, h, +p.minute, +p.second) - ms) / 60000);
+  }
+  function etToUtcMs(y, mo, d, hh, mm) {
+    var guess = Date.UTC(y, mo - 1, d, hh, mm);
+    var off = etOffset(guess), ms = guess - off * 60000;
+    var off2 = etOffset(ms); if (off2 !== off) ms = guess - off2 * 60000;
+    return ms;
+  }
+  function etParts(ms) {
+    var f = new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, hour12: false, weekday: "short", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" });
+    var p = {}; f.formatToParts(new Date(ms)).forEach(function (x) { p[x.type] = x.value; });
+    var wd = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }[p.weekday];
+    return { y: +p.year, mo: +p.month, d: +p.day, hh: p.hour === "24" ? 0 : +p.hour, mm: +p.minute, weekday: wd };
+  }
+  function addDaysEt(y, mo, d, n) { var t = Date.UTC(y, mo - 1, d) + n * 864e5, dd = new Date(t); return { y: dd.getUTCFullYear(), mo: dd.getUTCMonth() + 1, d: dd.getUTCDate() }; }
+  function fmtDay(ms) { return new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, weekday: "long", month: "short", day: "numeric" }).format(new Date(ms)); }
+  function fmtTime(ms) { return new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, hour: "numeric", minute: "2-digit" }).format(new Date(ms)) + " ET"; }
+
+  function conflict(startMs, dur) {
+    var a = startMs - CFG.travelBufferMin * 60000, b = startMs + dur * 60000 + CFG.travelBufferMin * 60000;
+    for (var i = 0; i < busy.length; i++) if (a < busy[i][1] && b > busy[i][0]) return true;
+    for (var j = 0; j < picks.length; j++) { var ps = picks[j].startMs, pe = ps + picks[j].dur * 60000; if (startMs < pe && (startMs + dur * 60000) > ps) return true; }
+    return false;
+  }
+
+  function windowFor(idx) {
+    if (idx === 0) {
+      var f = etParts(nowMs + CFG.firstLeadDays * 864e5);
+      var t = addDaysEt(f.y, f.mo, f.d, CFG.session1HorizonDays);
+      return { fromMs: etToUtcMs(f.y, f.mo, f.d, 0, 0), toMs: etToUtcMs(t.y, t.mo, t.d, 23, 59) };
+    }
+    var prev = etParts(picks[idx - 1].startMs);
+    var a = addDaysEt(prev.y, prev.mo, prev.d, CFG.gapMinDays);
+    var b = addDaysEt(prev.y, prev.mo, prev.d, CFG.gapMaxDays);
+    return { fromMs: etToUtcMs(a.y, a.mo, a.d, 0, 0), toMs: etToUtcMs(b.y, b.mo, b.d, 23, 59) };
+  }
+
+  function slotsFor(idx) {
+    var s = CFG.sessions[idx], dur = s.dur, win = windowFor(idx);
+    var byDay = [], f0 = etParts(win.fromMs), t0 = etParts(win.toMs);
+    var noon = etToUtcMs(f0.y, f0.mo, f0.d, 12, 0), lastNoon = etToUtcMs(t0.y, t0.mo, t0.d, 12, 0);
+    for (var ms = noon; ms <= lastNoon + 1; ms += 864e5) {
+      var et = etParts(ms);
+      if (et.weekday < 1 || et.weekday > 5) continue;
+      var daySlots = [];
+      for (var min = CFG.workStartHour * 60; min + dur <= CFG.workEndHour * 60; min += CFG.slotStepMin) {
+        var hh = Math.floor(min / 60), mm = min % 60;
+        var st = etToUtcMs(et.y, et.mo, et.d, hh, mm);
+        if (st < win.fromMs || st < nowMs) continue;
+        if (conflict(st, dur)) continue;
+        daySlots.push(st);
+      }
+      if (daySlots.length) byDay.push({ label: fmtDay(daySlots[0]), slots: daySlots });
+    }
+    return byDay;
+  }
+
+  function renderRail() {
+    var rail = document.getElementById("rail"); rail.innerHTML = "";
+    CFG.sessions.forEach(function (s, i) {
+      var el = document.createElement("span");
+      el.className = "pill " + (i < picks.length ? "done" : (i === picks.length ? "current" : ""));
+      el.textContent = "S" + s.n + (i < picks.length ? " ✓" : "");
+      rail.appendChild(el);
+    });
+  }
+
+  function renderPicker() {
+    renderRail();
+    var idx = picks.length, host = document.getElementById("picker");
+    if (idx >= CFG.sessions.length) { showReview(); return; }
+    var s = CFG.sessions[idx];
+    host.innerHTML = "";
+    var head = document.createElement("div"); head.className = "sess-head";
+    head.innerHTML = '<h3 style="margin:0;">Session ' + s.n + ': ' + s.title + '</h3><span class="dur">' + s.dur + ' min</span>';
+    host.appendChild(head);
+    if (idx > 0) {
+      var back = document.createElement("button"); back.className = "btn-link"; back.textContent = "← change Session " + CFG.sessions[idx - 1].n;
+      back.onclick = function () { picks.pop(); renderPicker(); };
+      host.appendChild(back);
+    }
+    var days = slotsFor(idx);
+    if (!days.length) {
+      var none = document.createElement("p"); none.className = "muted";
+      none.innerHTML = "No open times in the two-to-three-week window for this session. " +
+        (idx > 0 ? "Try an earlier time for the previous session, or " : "") +
+        '<a href="/index.html#contact">reach out</a> and we\'ll find a slot together.';
+      host.appendChild(none);
+      return;
+    }
+    days.forEach(function (day) {
+      var db = document.createElement("div"); db.className = "day-block";
+      var dl = document.createElement("div"); dl.className = "day-label"; dl.textContent = day.label; db.appendChild(dl);
+      var grid = document.createElement("div"); grid.className = "slot-grid";
+      day.slots.forEach(function (ms) {
+        var b = document.createElement("button"); b.className = "slot"; b.textContent = fmtTime(ms);
+        b.onclick = function () { picks.push({ n: s.n, startMs: ms, dur: s.dur }); renderPicker(); };
+        grid.appendChild(b);
+      });
+      db.appendChild(grid); host.appendChild(db);
+    });
+  }
+
+  function showReview() {
+    document.getElementById("wizard").style.display = "none";
+    var rv = document.getElementById("review"); rv.style.display = "";
+    var sum = document.getElementById("summary"); sum.innerHTML = "";
+    picks.forEach(function (p, i) {
+      var row = document.createElement("div"); row.className = "summary-row";
+      row.innerHTML = '<div><strong>Session ' + p.n + '</strong> · ' + CFG.sessions[i].title + '</div>' +
+        '<div class="when">' + fmtDay(p.startMs) + ' · ' + fmtTime(p.startMs) + '</div>';
+      sum.appendChild(row);
+    });
+  }
+
+  async function confirmAll() {
+    var btn = document.getElementById("confirm-btn"), msg = document.getElementById("review-msg");
+    btn.disabled = true; msg.className = "muted"; msg.textContent = "Booking…";
+    try {
+      var res = await fetch("/.netlify/functions/book-sessions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + authToken },
+        body: JSON.stringify({ sessions: picks.map(function (p) { return { n: p.n, startISO: new Date(p.startMs).toISOString() }; }), practiceLabel: practiceLabel, address: address })
+      });
+      var j = await res.json();
+      if (!res.ok || j.error) { msg.className = "err"; msg.textContent = j.error || "Something went wrong. Please try again."; btn.disabled = false; return; }
+      document.getElementById("review").style.display = "none";
+      var done = document.getElementById("done"); done.style.display = "";
+      var dl = document.getElementById("done-list"); dl.innerHTML = "";
+      picks.forEach(function (p, i) {
+        var row = document.createElement("div"); row.className = "summary-row";
+        row.innerHTML = '<div><strong>Session ' + p.n + '</strong> · ' + CFG.sessions[i].title + '</div><div class="when">' + fmtDay(p.startMs) + ' · ' + fmtTime(p.startMs) + '</div>';
+        dl.appendChild(row);
+      });
+    } catch (e) { msg.className = "err"; msg.textContent = "Network error — please try again."; btn.disabled = false; }
+  }
+
+  function renderBooked(rows) {
+    document.getElementById("loading").style.display = "none";
+    var done = document.getElementById("done"); done.style.display = "";
+    done.querySelector("h3").textContent = "Your sessions";
+    done.querySelector("p").textContent = "These are on the calendar. Need to move one? Reach out and we'll adjust it.";
+    var dl = document.getElementById("done-list"); dl.innerHTML = "";
+    rows.sort(function (a, b) { return a.session_number - b.session_number; }).forEach(function (r) {
+      var ms = Date.parse(r.starts_at);
+      var row = document.createElement("div"); row.className = "summary-row";
+      row.innerHTML = '<div><strong>Session ' + r.session_number + '</strong></div><div class="when">' + fmtDay(ms) + ' · ' + fmtTime(ms) + '</div>';
+      dl.appendChild(row);
+    });
+  }
+
+  async function loadPractice(uid) {
+    try {
+      var r = await client.from("onboarding_responses").select("*").eq("user_id", uid).maybeSingle();
+      if (r.data) {
+        var d = r.data;
+        practiceLabel = d.practice_name || d.office_name || d.practice || d.company || "";
+        address = d.address || d.office_address || d.practice_address || "";
+      }
+    } catch (e) {}
+  }
+
+  async function main() {
+    client = window.getSupabaseClient && window.getSupabaseClient();
+    if (!client) { document.getElementById("loading").textContent = "Scheduling isn't configured yet."; return; }
+    var auth = await window.MeridianAuth.requireLogin("/login.html");
+    if (!auth.user) return;
+    var sess = await client.auth.getSession();
+    authToken = sess.data.session && sess.data.session.access_token;
+
+    if (!auth.profile || auth.profile.membership_tier !== "gold") {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("not-gold").style.display = "";
+      return;
+    }
+
+    var have = await client.from("client_sessions").select("*").eq("user_id", auth.user.id);
+    if (!have.error && have.data && have.data.length) { renderBooked(have.data); return; }
+
+    await loadPractice(auth.user.id);
+
+    var toISO = new Date(nowMs + 175 * 864e5).toISOString();
+    var av = await fetch("/.netlify/functions/availability?from=" + new Date(nowMs).toISOString() + "&to=" + toISO);
+    var data = await av.json();
+    if (data.error) { document.getElementById("loading").textContent = "Couldn't load availability: " + data.error; return; }
+    busy = (data.busy || []).map(function (b) { return [Date.parse(b[0]), Date.parse(b[1])]; });
+    if (data.now) nowMs = Date.parse(data.now);
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("wizard").style.display = "";
+    renderPicker();
+
+    document.getElementById("confirm-btn").addEventListener("click", confirmAll);
+    document.getElementById("restart-btn").addEventListener("click", function () {
+      picks = []; document.getElementById("review").style.display = "none";
+      document.getElementById("wizard").style.display = ""; renderPicker();
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", main);
+})();
+</script>
+</body>
+</html>

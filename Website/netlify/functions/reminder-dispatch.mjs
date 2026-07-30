@@ -11,7 +11,9 @@
 //
 // The isDue logic below mirrors js/reminder-schedule.js (which is unit-tested).
 
-export const config = { schedule: "@hourly" };
+// DISABLED (off until further notice) to save Netlify credits.
+// To re-enable the hourly run, restore: export const config = { schedule: "@hourly" };
+export const config = {};
 
 function partsInTZ(date, tz) {
   const f = new Intl.DateTimeFormat("en-US", {

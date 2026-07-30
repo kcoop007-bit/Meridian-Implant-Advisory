@@ -5,8 +5,8 @@
   publish = "."
   functions = "netlify/functions"
 
-# The reminder dispatcher runs every hour and sends any reminders due that
-# hour (Eastern). Schedule is also declared in the function via
-# `export const config = { schedule: "@hourly" }` — either is sufficient.
-[functions."reminder-dispatch"]
-  schedule = "@hourly"
+# Reminder dispatcher is DISABLED (off until further notice) to save Netlify
+# credits. To re-enable: uncomment the block below AND restore the schedule
+# export in reminder-dispatch.mjs.
+# [functions."reminder-dispatch"]
+#   schedule = "@hourly"
