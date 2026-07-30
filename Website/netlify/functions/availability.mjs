@@ -95,6 +95,16 @@ async function googleBusy(token, calId, fromISO, toISO) {
   const cal = j.calendars && j.calendars[calId];
   return ((cal && cal.busy) || []).map((b) => [Date.parse(b.start), Date.parse(b.end)]);
 }
+// freeBusy rejects long ranges ("timeRangeTooLong"), so query in ~30-day chunks.
+async function googleBusyRange(token, calId, fromMs, toMs) {
+  const CHUNK = 30 * 864e5;
+  let out = [];
+  for (let s = fromMs; s < toMs; s += CHUNK) {
+    const e = Math.min(s + CHUNK, toMs);
+    out = out.concat(await googleBusy(token, calId, new Date(s).toISOString(), new Date(e).toISOString()));
+  }
+  return out;
+}
 
 export default async (req) => {
   try {
@@ -107,7 +117,7 @@ export default async (req) => {
     const feeds = (process.env.M365_ICS_FEEDS || "").split(",").map((s) => s.trim()).filter(Boolean);
 
     const token = await googleToken(sa);
-    let busy = await googleBusy(token, calId, new Date(fromMs).toISOString(), new Date(toMs).toISOString());
+    let busy = await googleBusyRange(token, calId, fromMs, toMs);
 
     const fetched = await Promise.allSettled(feeds.map((u) => fetch(u).then((r) => r.text())));
     for (const f of fetched) {

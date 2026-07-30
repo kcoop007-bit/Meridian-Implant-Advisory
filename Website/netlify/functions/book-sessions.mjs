@@ -92,6 +92,15 @@ async function googleBusy(token, calId, fromISO, toISO) {
   const cal = j.calendars && j.calendars[calId];
   return ((cal && cal.busy) || []).map((b) => [Date.parse(b.start), Date.parse(b.end)]);
 }
+async function googleBusyRange(token, calId, fromMs, toMs) {
+  const CHUNK = 30 * 864e5;
+  let out = [];
+  for (let s = fromMs; s < toMs; s += CHUNK) {
+    const e = Math.min(s + CHUNK, toMs);
+    out = out.concat(await googleBusy(token, calId, new Date(s).toISOString(), new Date(e).toISOString()));
+  }
+  return out;
+}
 async function insertEvent(token, calId, ev) {
   const r = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calId)}/events`, {
     method: "POST", headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" }, body: JSON.stringify(ev)
@@ -165,7 +174,7 @@ export default async (req) => {
     const gToken = await googleToken(JSON.parse(process.env.GOOGLE_SA_KEY));
     const calId = process.env.GCAL_ID;
     const fromMs = now, toMs = starts[starts.length - 1].s + 864e5;
-    let busy = await googleBusy(gToken, calId, new Date(fromMs).toISOString(), new Date(toMs).toISOString());
+    let busy = await googleBusyRange(gToken, calId, fromMs, toMs);
     const feeds = (process.env.M365_ICS_FEEDS || "").split(",").map((s) => s.trim()).filter(Boolean);
     const fetched = await Promise.allSettled(feeds.map((u) => fetch(u).then((r) => r.text())));
     for (const f of fetched) if (f.status === "fulfilled") { try { busy = busy.concat(parseICSBusy(f.value, fromMs, toMs)); } catch (_) {} }
