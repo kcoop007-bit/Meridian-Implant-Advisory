@@ -4,7 +4,7 @@
 // account creation + branded email happen server-side in the stripe-webhook
 // function the instant payment clears, so this page is just confirmation.
 (function () {
-  var TIER_LABEL = { bronze: "Bronze · The Playbook", silver: "Silver · Playbook + Platform", gold: "Gold · Premium On-Site" };
+  var TIER_LABEL = { bronze: "Bronze", silver: "Silver", gold: "Gold" };
 
   async function main() {
     var sid = new URLSearchParams(window.location.search).get("session_id");
