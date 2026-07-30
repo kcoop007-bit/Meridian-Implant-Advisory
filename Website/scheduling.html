@@ -27,14 +27,14 @@
   .err { color:#B4423C; }
   .ok { color:#2E7D4F; }
   .btn-link { background:none; border:none; color:var(--gold-dim,#B8863B); cursor:pointer; font-size:0.85rem; padding:0; }
-  .cal { max-width:420px; margin:18px 0 6px; border:1px solid var(--paper-line); border-radius:12px; padding:14px 16px; }
-  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-  .cal-month { font-weight:600; font-size:1.05rem; }
-  .cal-arrow { border:1px solid var(--paper-line); background:#fff; border-radius:8px; width:34px; height:34px; font-size:1.1rem; cursor:pointer; line-height:1; }
+  .cal { max-width:600px; margin:20px 0 6px; border:1px solid var(--paper-line); border-radius:12px; padding:18px 22px; }
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .cal-month { font-weight:600; font-size:1.3rem; }
+  .cal-arrow { border:1px solid var(--paper-line); background:#fff; border-radius:8px; width:42px; height:42px; font-size:1.35rem; cursor:pointer; line-height:1; }
   .cal-arrow:disabled { opacity:0.3; cursor:default; }
-  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal-dow { text-align:center; font-size:0.72rem; letter-spacing:0.04em; color:var(--text-faint); padding:4px 0; text-transform:uppercase; }
-  .cal-cell { height:38px; border:1px solid transparent; background:none; border-radius:8px; font-size:0.9rem; color:var(--text-soft); cursor:default; padding:0; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; }
+  .cal-dow { text-align:center; font-size:0.62rem; letter-spacing:0.01em; color:var(--text-faint); padding:5px 0; text-transform:uppercase; white-space:nowrap; overflow:hidden; }
+  .cal-cell { height:48px; border:1px solid transparent; background:none; border-radius:8px; font-size:1.1rem; color:var(--text-soft); cursor:default; padding:0; }
   .cal-cell.empty { border:none; }
   .cal-cell.disabled { color:var(--text-faint); opacity:0.4; }
   .cal-cell.open { background:rgba(184,147,95,0.10); color:var(--text); font-weight:600; cursor:pointer; border-color:rgba(184,147,95,0.25); }
@@ -220,7 +220,7 @@
     nav.appendChild(prev); nav.appendChild(lbl); nav.appendChild(next); cal.appendChild(nav);
 
     var grid = document.createElement("div"); grid.className = "cal-grid";
-    ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach(function (w) { var h = document.createElement("div"); h.className = "cal-dow"; h.textContent = w; grid.appendChild(h); });
+    ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].forEach(function (w) { var h = document.createElement("div"); h.className = "cal-dow"; h.textContent = w; grid.appendChild(h); });
     var firstDow = new Date(Date.UTC(mm.y, mm.mo - 1, 1)).getUTCDay();
     var dim = new Date(Date.UTC(mm.y, mm.mo, 0)).getUTCDate();
     for (var i = 0; i < firstDow; i++) { var e0 = document.createElement("div"); e0.className = "cal-cell empty"; grid.appendChild(e0); }
