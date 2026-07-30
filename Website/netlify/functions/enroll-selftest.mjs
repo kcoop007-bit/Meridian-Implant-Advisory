@@ -36,8 +36,15 @@ export default async (req) => {
   try {
     const r = await fetch("https://api.brevo.com/v3/senders/domains", { headers: { "api-key": process.env.BREVO_API_KEY, accept: "application/json" } });
     const j = await r.json().catch(() => ({}));
-    out.brevo.domains = (j.domains || []).map((d) => ({ domain: d.domain, authenticated: d.authenticated }));
+    out.brevo.domains = j.domains || j; // raw, so we see the real domain name + auth flags
   } catch (e) { out.brevo.domains_error = String((e && e.message) || e); }
+
+  // Brevo account state — a fresh account under review can accept (201) but not deliver.
+  try {
+    const r = await fetch("https://api.brevo.com/v3/account", { headers: { "api-key": process.env.BREVO_API_KEY, accept: "application/json" } });
+    const j = await r.json().catch(() => ({}));
+    out.brevo.account = { plan: j.plan, relay: j.relay, email: j.email };
+  } catch (e) { out.brevo.account_error = String((e && e.message) || e); }
 
   if (to) {
     try {
@@ -59,6 +66,15 @@ export default async (req) => {
       out.send = { from, status: r.status, body: await r.text() };
     } catch (e) { out.send = { error: String((e && e.message) || e) }; }
   }
+
+  // What actually happened to recent sends — delivered / bounced / blocked / deferred.
+  try {
+    const q = "https://api.brevo.com/v3/smtp/statistics/events?limit=50&days=2" + (to ? "&email=" + encodeURIComponent(to) : "");
+    const r = await fetch(q, { headers: { "api-key": process.env.BREVO_API_KEY, accept: "application/json" } });
+    out.brevo.events_status = r.status;
+    const j = await r.json().catch(() => ({}));
+    out.brevo.events = (j.events || []).map((e) => ({ email: e.email, event: e.event, subject: e.subject, date: e.date, reason: e.reason }));
+  } catch (e) { out.brevo.events_error = String((e && e.message) || e); }
 
   return new Response(JSON.stringify(out, null, 2), { headers: { "Content-Type": "application/json" } });
 };
