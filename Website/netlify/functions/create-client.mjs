@@ -12,7 +12,7 @@
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY   (secret — bypasses RLS)
 
-const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 195000: "silver", 950000: "gold" };
+const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 295000: "silver", 950000: "gold" };
 const WAIVER_VERSION = "v1-2026-07";
 
 function json(o, code = 200) {

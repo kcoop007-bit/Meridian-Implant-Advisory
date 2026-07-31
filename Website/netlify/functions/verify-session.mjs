@@ -9,7 +9,7 @@
 // Tier is matched off the one-time onboarding amount. If you change prices,
 // update TIER_BY_ONBOARD_CENTS here to match.
 
-const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 195000: "silver", 950000: "gold" };
+const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 295000: "silver", 950000: "gold" };
 
 async function stripeGet(path) {
   const r = await fetch("https://api.stripe.com/v1/" + path, {

@@ -19,7 +19,7 @@
 
 import crypto from "node:crypto";
 
-const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 195000: "silver", 950000: "gold" };
+const TIER_BY_ONBOARD_CENTS = { 49500: "bronze", 295000: "silver", 950000: "gold" };
 const TIER_LABEL = { bronze: "Bronze — The Playbook", silver: "Silver — Playbook + Platform", gold: "Gold — Premium On-Site Implementation" };
 
 function ok(msg) { return new Response(msg || "ok", { status: 200 }); }

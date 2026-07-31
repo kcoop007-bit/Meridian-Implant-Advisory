@@ -14,7 +14,7 @@ window.MERIDIAN_PRICING = {
   fallback: "/index.html#contact",
   tiers: {
     bronze: { stripeLink: "https://buy.stripe.com/test_28E14nedZfIPayHfDR6Na00" },   // TEST — one-time $495
-    silver: { stripeLink: "https://buy.stripe.com/test_9B65kD5Ht2W34aj0IX6Na01" },   // TEST — $1,950 onboarding + $395/mo
+    silver: { stripeLink: "https://buy.stripe.com/test_fZu14n8TFeEL22b1N16Na05" },   // TEST — $2,950 onboarding + $395/mo
     gold:   { stripeLink: "https://buy.stripe.com/test_5kQdR92vh54bcGP0IX6Na03" }    // TEST — $9,500 onboarding + $2,500/mo
   }
   // NOTE: these are Stripe TEST links. Before going live, swap in the three
