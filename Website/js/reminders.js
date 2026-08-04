@@ -22,6 +22,11 @@
     document.getElementById("rem-form").addEventListener("submit", onAdd);
     await seedStarters(client, auth);
     await renderList();
+
+    var restoreBtn = document.getElementById("restore-starters");
+    if (restoreBtn) {
+      restoreBtn.addEventListener("click", function () { restoreStarters(client, auth); });
+    }
   }
 
 
@@ -40,7 +45,38 @@
       return window.MeridianReminderTemplates.toRow(t, auth.user.id, email);
     });
     var ins = await client.from("reminders").insert(rows);
-    if (ins.error) console.warn("Could not seed starter reminders:", ins.error.message);
+    if (ins.error) {
+      // Surfaced, not swallowed. A console.warn here meant a failed seed looked
+      // identical to "no starter reminders exist", which is exactly what went
+      // wrong the first time this shipped.
+      setStatus("Couldn't load the starter reminders: " + ins.error.message, "#B4423C");
+      console.warn("seed failed:", ins.error);
+    }
+  }
+
+  // Manual re-seed. The automatic one only fires when the account has NO
+  // reminders at all, so anyone who had already created one — or hit a failed
+  // seed — could never get the starters. The unique index on
+  // (user_id, template_key) makes this safe to press repeatedly.
+  async function restoreStarters(client, auth) {
+    if (!window.MeridianReminderTemplates) {
+      setStatus("Starter reminder templates didn't load — try a hard refresh.", "#B4423C");
+      return;
+    }
+    setStatus("Loading starter reminders…");
+    var email = (auth.profile && auth.profile.target_email) || auth.user.email;
+    var rows = window.MeridianReminderTemplates.ALL.map(function (t) {
+      return window.MeridianReminderTemplates.toRow(t, auth.user.id, email);
+    });
+    var res = await client.from("reminders")
+      .upsert(rows, { onConflict: "user_id,template_key", ignoreDuplicates: true });
+    if (res.error) {
+      setStatus("Couldn't load them: " + res.error.message, "#B4423C");
+      console.warn("restore failed:", res.error);
+      return;
+    }
+    setStatus("Starter reminders loaded.", "#2E7D4F");
+    renderList();
   }
 
   function show(s){var e=document.querySelector(s);if(e)e.style.display="";}
