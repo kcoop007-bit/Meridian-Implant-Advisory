@@ -23,6 +23,14 @@
     await seedStarters(client, auth);
     await renderList();
 
+    var cancelBtn = document.getElementById("rf-cancel");
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", function () {
+        endEdit();
+        setStatus("Edit cancelled.");
+      });
+    }
+
     var restoreBtn = document.getElementById("restore-starters");
     if (restoreBtn) {
       restoreBtn.addEventListener("click", function () { restoreStarters(client, auth); });
@@ -94,6 +102,44 @@
     return out;
   }
 
+  var editingId = null;   // null = the form is adding; otherwise updating this row
+
+  // Load a reminder into the form above and scroll to it. Reusing the add form
+  // rather than building a second one means the two can never drift apart in
+  // which fields they expose.
+  function startEdit(r) {
+    editingId = r.id;
+    document.getElementById("rf-title").value = r.title || "";
+    document.getElementById("rf-category").value = r.category || "custom";
+    document.getElementById("rf-channel").value = r.channel || "email";
+    document.getElementById("rf-frequency").value = r.frequency || "weekly";
+    document.getElementById("rf-time").value = (r.time_local || "07:00").slice(0, 5);
+    document.getElementById("rf-email").value = r.target_email || "";
+    document.getElementById("rf-notes").value = r.notes || "";
+    toggleDays();
+    var wds = r.byweekday || [];
+    document.querySelectorAll("#rf-weekdays input").forEach(function (c) {
+      c.checked = wds.indexOf(parseInt(c.value, 10)) !== -1;
+    });
+    var btn = document.querySelector('#rem-form button[type="submit"]');
+    if (btn) btn.textContent = "Update reminder";
+    var cancel = document.getElementById("rf-cancel");
+    if (cancel) cancel.style.display = "";
+    setStatus("Editing \u201c" + (r.title || "reminder") + "\u201d.");
+    document.getElementById("rem-form").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function endEdit() {
+    editingId = null;
+    document.getElementById("rem-form").reset();
+    document.getElementById("rf-time").value = "07:00";
+    toggleDays();
+    var btn = document.querySelector('#rem-form button[type="submit"]');
+    if (btn) btn.textContent = "Add reminder";
+    var cancel = document.getElementById("rf-cancel");
+    if (cancel) cancel.style.display = "none";
+  }
+
   async function onAdd(e) {
     e.preventDefault();
     var freq = document.getElementById("rf-frequency").value;
@@ -115,12 +161,19 @@
       notes: document.getElementById("rf-notes").value.trim() || null,
       active: true
     };
-    var res = await client.from("reminders").insert([payload]);
+    var res;
+    if (editingId) {
+      // Don't touch user_id or active on an edit — an edit is not a resume.
+      delete payload.user_id;
+      delete payload.active;
+      payload.updated_at = new Date().toISOString();
+      res = await client.from("reminders").update(payload).eq("id", editingId);
+    } else {
+      res = await client.from("reminders").insert([payload]);
+    }
     if (res.error) { setStatus("Couldn't save: " + res.error.message, "#B4423C"); return; }
-    setStatus("Reminder added.", "#2E7D4F");
-    document.getElementById("rem-form").reset();
-    document.getElementById("rf-time").value = "07:00";
-    toggleDays();
+    setStatus(editingId ? "Reminder updated." : "Reminder added.", "#2E7D4F");
+    endEdit();
     renderList();
   }
 
@@ -151,6 +204,12 @@
 
       var right = document.createElement("div");
       right.style.cssText = "display:flex; gap:8px; align-items:center;";
+
+      var edit = document.createElement("button");
+      edit.className = "btn btn-outline-dark btn-sm";
+      edit.textContent = "Edit";
+      edit.addEventListener("click", function () { startEdit(r); });
+      right.appendChild(edit);
 
       var toggle = document.createElement("button");
       toggle.className = "btn btn-outline-dark btn-sm";
