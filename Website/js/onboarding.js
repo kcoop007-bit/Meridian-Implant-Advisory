@@ -15,6 +15,16 @@
     show("#onboard");
     document.getElementById("user-email").textContent = auth.user.email;
 
+    var ptype = document.getElementById("ob-ptype");
+    var specWrap = document.getElementById("ob-spec-wrap");
+    if (ptype && specWrap) {
+      var syncSpec = function () {
+        specWrap.style.display = ptype.value === "specialist" ? "" : "none";
+      };
+      ptype.addEventListener("change", syncSpec);
+      syncSpec();
+    }
+
     var accept = document.getElementById("ob-accept");
     var submit = document.getElementById("ob-submit");
     accept.addEventListener("change", function () { submit.disabled = !accept.checked; });
@@ -42,6 +52,10 @@
       setVal("ob-clin-email", d.clinician_email);    setVal("ob-clin-cell", d.clinician_cell);
       setVal("ob-windows", d.preferred_meeting_windows);
       setVal("ob-success", d.success_in_6_months);
+      setVal("ob-ptype", d.practice_type);
+      setVal("ob-specialty", d.specialty);
+      var pt = document.getElementById("ob-ptype"), sw = document.getElementById("ob-spec-wrap");
+      if (pt && sw) sw.style.display = pt.value === "specialist" ? "" : "none";
       setVal("ob-refout", d.refers_implants_out === true ? "yes" : d.refers_implants_out === false ? "no" : "");
       setVal("ob-om", d.has_office_manager === true ? "yes" : d.has_office_manager === false ? "no" : "");
       var tech = d.technology || {};
@@ -109,6 +123,8 @@
       staff_structure: staffSummary ? { summary: staffSummary } : null,
       prior_systems: val("ob-prior"),
 
+      practice_type: val("ob-ptype") || null,
+      specialty: val("ob-ptype") === "specialist" ? (val("ob-specialty") || null) : null,
       practice_name: val("ob-practice") || null,
       office_address: val("ob-address") || null,
       office_phone: val("ob-phone") || null,
@@ -150,6 +166,17 @@
 
     var up = await client.from("onboarding_responses").upsert(payload, { onConflict: "user_id" });
     if (up.error) { status.textContent = "Couldn't save: " + up.error.message; status.style.color = "#B4423C"; return; }
+
+    // profiles.client_type is what actually targets the resource library, so it
+    // has to be kept in step with the answer above. Previously it was only ever
+    // set by hand in SQL, which meant every new client saw the general list.
+    var ptypeVal = val("ob-ptype");
+    if (ptypeVal === "gp" || ptypeVal === "specialist") {
+      var pu = await client.from("profiles")
+        .update({ client_type: ptypeVal, updated_at: new Date().toISOString() })
+        .eq("id", user.id);
+      if (pu.error) console.warn("Could not set client_type:", pu.error.message);
+    }
 
     // Immutable acceptance record.
     var wa = await client.from("waiver_acceptances").insert([{

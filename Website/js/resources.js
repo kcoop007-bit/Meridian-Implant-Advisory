@@ -55,7 +55,11 @@
       window.MeridianAuth.logout();
     });
 
-    var isAdmin = auth.profile && auth.profile.role === "admin";
+    // actsAsAdmin(), not role === "admin": an admin who has chosen "client
+    // portal" must not see the upload panel, or it isn't the client's view.
+    // Uploading is closed server-side by RLS regardless (v6 §7).
+    window.MeridianPortalMode.mountBar(auth.profile);
+    var isAdmin = window.MeridianPortalMode.actsAsAdmin(auth.profile);
     if (isAdmin) {
       show("#admin-panel");
       wireUpload(client);
@@ -67,6 +71,18 @@
 
     await loadResources(client, auth.profile, isAdmin);
   }
+
+  // The four sections of the client library, in fixed display order.
+  var SECTIONS = [
+    { key: "playbook",         label: "The Playbook",
+      blurb: "The full Implant Practice Playbook." },
+    { key: "active-documents", label: "Active Documents",
+      blurb: "Worksheets, scripts, letters, checklists and consent forms — print and use." },
+    { key: "training",         label: "Training",
+      blurb: "Presentations for team meetings and role-play." },
+    { key: "guidance",         label: "Guidance",
+      blurb: "Video walkthroughs." }
+  ];
 
   function show(sel) { var el = document.querySelector(sel); if (el) el.style.display = ""; }
   function hide(sel) { var el = document.querySelector(sel); if (el) el.style.display = "none"; }
@@ -92,32 +108,27 @@
     var visible = res.data.filter(function (r) {
       if (isAdmin) return true;
       if (r.category === "general") return true;
-      return profile && r.category === profile.client_type;
+      // Not profile.client_type directly: an admin previewing the client portal
+      // picks which library to look at from the mode bar.
+      return r.category === window.MeridianPortalMode.effectiveClientType(profile);
     });
 
-    if (visible.length === 0) {
-      list.innerHTML = '<p style="color:var(--text-faint);">No resources here yet — check back soon.</p>';
-      return;
-    }
 
-    // Partition: pinned first, then Staff / Patient / General.
-    var pinned = [], staff = [], patient = [], general = [];
-    visible.forEach(function (r) {
-      if (r.pinned || r.module === PINNED_MODULE) { pinned.push(r); return; }
-      if (r.audience === "staff") staff.push(r);
-      else if (r.audience === "patient") patient.push(r);
-      else general.push(r);
+    // Four fixed sections, always in this order. A heading renders even when its
+    // section is empty, so a client sees what is coming rather than assuming the
+    // page is broken. Staff/Patient grouping still happens inside each band.
+    SECTIONS.forEach(function (sec) {
+      var mine = visible.filter(function (r) {
+        return (r.section || "active-documents") === sec.key;
+      });
+      list.appendChild(renderBand(mine, sec.label, sec.key === "playbook",
+                                  profile, isAdmin, client, sec.blurb));
     });
-
-    if (pinned.length) list.appendChild(renderBand(pinned, PINNED_MODULE, true, profile, isAdmin, client));
-    if (staff.length) list.appendChild(renderBand(staff, "Staff Documents", false, profile, isAdmin, client));
-    if (patient.length) list.appendChild(renderBand(patient, "Patient Documents", false, profile, isAdmin, client));
-    if (general.length) list.appendChild(renderBand(general, "General", false, profile, isAdmin, client));
   }
 
   // A top-level band (Pinned / Staff / Patient / General), with files grouped
   // by training module inside it.
-  function renderBand(items, bandLabel, isPinnedBand, profile, isAdmin, client) {
+  function renderBand(items, bandLabel, isPinnedBand, profile, isAdmin, client, blurb) {
     var band = document.createElement("div");
     band.style.marginBottom = "52px";
 
@@ -134,6 +145,25 @@
       head.appendChild(pin);
     }
     band.appendChild(head);
+
+    if (blurb) {
+      var sub = document.createElement("p");
+      sub.textContent = blurb;
+      sub.style.cssText = "margin:-8px 0 18px; font-size:0.86rem; color:var(--text-faint,#7A736A);";
+      band.appendChild(sub);
+    }
+
+    // An empty section still shows its heading, so the shape of the library is
+    // visible from day one and a missing upload is obvious to the admin.
+    if (!items.length) {
+      var empty = document.createElement("p");
+      empty.textContent = isAdmin
+        ? "Nothing here yet — upload above and choose this section."
+        : "Coming soon.";
+      empty.style.cssText = "font-size:0.86rem; font-style:italic; color:var(--text-faint,#9A938A);";
+      band.appendChild(empty);
+      return band;
+    }
 
     // group by module
     var groups = {};
@@ -259,6 +289,7 @@
         description: descInput.value.trim(),
         file_path: path,
         category: categorySelect.value,
+        section: (document.getElementById("up-section") || {}).value || "active-documents",
         audience: audienceSelect.value || null,
         module: moduleInput.value.trim() || null,
         pinned: !!pinnedInput.checked

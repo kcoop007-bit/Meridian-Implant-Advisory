@@ -20,7 +20,27 @@
     toggleDays();
 
     document.getElementById("rem-form").addEventListener("submit", onAdd);
+    await seedStarters(client, auth);
     await renderList();
+  }
+
+
+  // Seed the starter schedule ONCE, and only when the account has no reminders
+  // at all. Guarded further by a unique index on (user_id, template_key), so a
+  // race or a double-click cannot produce duplicates — and a client who deletes
+  // a reminder does not get it silently resurrected on their next visit.
+  async function seedStarters(client, auth) {
+    if (!window.MeridianReminderTemplates) return;
+    if (!window.MeridianAccess.canAccessPortal(auth.profile)) return;
+    var existing = await client.from("reminders").select("id").eq("user_id", auth.user.id).limit(1);
+    if (existing.error || (existing.data && existing.data.length)) return;
+
+    var email = (auth.profile && auth.profile.target_email) || auth.user.email;
+    var rows = window.MeridianReminderTemplates.ALL.map(function (t) {
+      return window.MeridianReminderTemplates.toRow(t, auth.user.id, email);
+    });
+    var ins = await client.from("reminders").insert(rows);
+    if (ins.error) console.warn("Could not seed starter reminders:", ins.error.message);
   }
 
   function show(s){var e=document.querySelector(s);if(e)e.style.display="";}

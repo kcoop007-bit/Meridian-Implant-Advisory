@@ -9,6 +9,8 @@
 })(typeof self !== "undefined" ? self : this, function () {
   var WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   var WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  var MONTHS = ["January","February","March","April","May","June","July",
+                "August","September","October","November","December"];
 
   function partsInTZ(date, tz) {
     var f = new Intl.DateTimeFormat("en-US", {
@@ -36,6 +38,7 @@
       case "monthly":   return p.day === dom;
       case "quarterly": return [1, 4, 7, 10].indexOf(p.month) !== -1 && p.day === dom;
       case "biannual":  return (p.month === 1 || p.month === 7) && p.day === dom;
+      case "yearly":    return p.month === (r.month_of_year || 1) && p.day === dom;
       case "custom":    return wds ? wds.indexOf(p.weekday) !== -1 : true;
       default:          return false;
     }
@@ -67,6 +70,8 @@
         return "Quarterly (Jan/Apr/Jul/Oct) on the " + ord + " at " + t;
       case "biannual":
         return "Twice a year (Jan 1 & Jul 1) at " + t;
+      case "yearly":
+        return "Yearly on " + MONTHS[(r.month_of_year || 1) - 1] + " " + ord + " at " + t;
       case "custom":
         return wds
           ? "On " + wds.map(function (d) { return WD[d]; }).join(", ") + " at " + t

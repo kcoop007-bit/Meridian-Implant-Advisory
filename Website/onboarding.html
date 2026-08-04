@@ -98,6 +98,29 @@
       <h3 style="margin-top:32px;">Acknowledgment &amp; Waiver</h3>
       <p style="font-size:0.85rem; color:var(--text-faint); margin-top:-4px;">Please read and accept before continuing.</p>
       <div class="field">
+        <label for="ob-ptype">Which describes your practice?</label>
+        <select id="ob-ptype" required>
+          <option value="">Please choose…</option>
+          <option value="gp">General practice</option>
+          <option value="specialist">Specialist practice</option>
+        </select>
+        <span class="hint-sm">This decides which resources you see — the general-practice and
+          specialist libraries are different.</span>
+      </div>
+
+      <div class="field" id="ob-spec-wrap" style="display:none;">
+        <label for="ob-specialty">Specialty</label>
+        <select id="ob-specialty">
+          <option value="">Please choose…</option>
+          <option value="periodontics">Periodontics</option>
+          <option value="oral-surgery">Oral &amp; maxillofacial surgery</option>
+          <option value="prosthodontics">Prosthodontics</option>
+          <option value="endodontics">Endodontics</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="field">
         <label for="ob-practice">Practice name</label>
         <input type="text" id="ob-practice">
       </div>

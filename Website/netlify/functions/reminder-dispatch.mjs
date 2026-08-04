@@ -6,7 +6,7 @@
 //   SUPABASE_SERVICE_ROLE_KEY    (secret — server-only; bypasses RLS)
 //   BREVO_API_KEY                (secret — xkeysib-…)
 // Optional:
-//   REMINDER_FROM_EMAIL          default reminders@meridianimplantadvisory.com
+//   REMINDER_FROM_EMAIL          default clientdevelopment@meridianimplantadvisory.com
 //   REMINDER_FROM_NAME           default "Meridian Implant Advisory"
 //
 // The isDue logic below mirrors js/reminder-schedule.js (which is unit-tested).
@@ -75,19 +75,52 @@ function icsFor(reminder, whenET) {
   ].join("\r\n");
 }
 
+function safeJson(v) { try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch { return []; } }
+
 async function sendEmail(to, reminder, whenET) {
-  const from = process.env.REMINDER_FROM_EMAIL || "reminders@meridianimplantadvisory.com";
+  const from = process.env.REMINDER_FROM_EMAIL || "clientdevelopment@meridianimplantadvisory.com";
   const name = process.env.REMINDER_FROM_NAME || "Meridian Implant Advisory";
   const wantsCal = reminder.channel === "calendar" || reminder.channel === "both";
+  // A reminder that only says "Daily huddle" makes the reader go and find out
+  // what a daily huddle is for. These carry the goal, the agenda and links to the
+  // exact documents needed, so the email IS the meeting prep.
+  const SITE = process.env.SITE_URL || "https://meridianimplantadvisory.com";
+  const esc = (v) => String(v == null ? "" : v)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const asArray = (v) => Array.isArray(v) ? v : (typeof v === "string" ? safeJson(v) : []);
+
+  const agenda = asArray(reminder.agenda);
+  const docs = asArray(reminder.docs);
+
+  const goalHtml = reminder.goal
+    ? `<p style="margin:0 0 6px;color:#5A6472;font-size:13px;text-transform:uppercase;letter-spacing:.06em;">The goal</p>
+       <p style="margin:0 0 20px;font-size:15px;">${esc(reminder.goal)}</p>` : "";
+
+  const agendaHtml = agenda.length
+    ? `<p style="margin:0 0 6px;color:#5A6472;font-size:13px;text-transform:uppercase;letter-spacing:.06em;">What to cover</p>
+       <ul style="margin:0 0 20px;padding-left:20px;font-size:15px;line-height:1.6;">
+         ${agenda.map((a) => `<li style="margin-bottom:6px;">${esc(a)}</li>`).join("")}
+       </ul>` : "";
+
+  const docsHtml = docs.length
+    ? `<p style="margin:0 0 6px;color:#5A6472;font-size:13px;text-transform:uppercase;letter-spacing:.06em;">Documents you'll need</p>
+       <p style="margin:0 0 20px;font-size:15px;line-height:1.9;">
+         ${docs.map((d) => `<a href="${SITE}${esc(d.href)}" style="color:#B8863B;font-weight:600;">${esc(d.label)}</a>`).join("<br>")}
+       </p>` : "";
+
   const body = {
     sender: { email: from, name },
     to: [{ email: to }],
-    subject: "Reminder: " + reminder.title,
+    subject: reminder.title,
     htmlContent:
-      `<div style="font-family:Arial,sans-serif;color:#151B23;">
-        <p style="font-size:16px;"><strong>${reminder.title}</strong></p>
-        ${reminder.notes ? `<p>${reminder.notes}</p>` : ""}
-        <p style="color:#8A94A3;font-size:13px;">Sent by your Meridian Implant Advisory account. Manage or pause this reminder from your account page.</p>
+      `<div style="font-family:Arial,Helvetica,sans-serif;color:#151B23;max-width:560px;">
+        <p style="font-size:18px;font-weight:600;margin:0 0 18px;">${esc(reminder.title)}</p>
+        ${goalHtml}${agendaHtml}${docsHtml}
+        ${reminder.notes ? `<p style="font-size:15px;">${esc(reminder.notes)}</p>` : ""}
+        <p style="border-top:1px solid #E3DED5;padding-top:14px;color:#8A94A3;font-size:12px;line-height:1.6;">
+          Sent by Meridian Implant Advisory.
+          <a href="${SITE}/reminders.html" style="color:#8A94A3;">Change the day, time or recipient</a>.
+        </p>
       </div>`
   };
   if (wantsCal) {
