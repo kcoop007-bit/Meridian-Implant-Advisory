@@ -29,8 +29,36 @@
         link.textContent = "Resources";
         link.setAttribute("href", "/resources.html");
         link.setAttribute("data-nav", "resources");
+        addLogoutLink(link);
       }
     });
+  }
+
+
+  // "Client Login" becomes "Resources" once signed in, which left no way out of
+  // the session from the top menu. This adds a Log Out beside it.
+  //
+  // It calls MeridianAuth.hardLogout() where available — signOut({scope:"global"})
+  // plus a purge of the cached token — rather than a plain signOut, because a
+  // leftover token in localStorage is exactly what made the login link look stuck.
+  function addLogoutLink(afterEl) {
+    if (document.querySelector('[data-nav="logout"]')) return;
+    var a = document.createElement("a");
+    a.href = "/login.html?signout=1";
+    a.textContent = "Log Out";
+    a.setAttribute("data-nav", "logout");
+    a.addEventListener("click", function (e) {
+      e.preventDefault();
+      a.textContent = "Signing out…";
+      var done = function () { window.location.href = "/login.html"; };
+      if (window.MeridianAuth && window.MeridianAuth.hardLogout) {
+        window.MeridianAuth.hardLogout().then(done, done);
+      } else {
+        var c = window.getSupabaseClient && window.getSupabaseClient();
+        if (c) { c.auth.signOut().then(done, done); } else { done(); }
+      }
+    });
+    afterEl.parentNode.insertBefore(a, afterEl.nextSibling);
   }
 
   function wireNavToggle() {
