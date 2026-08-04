@@ -23,6 +23,14 @@
         <p>The client portal isn't fully set up yet — check back soon, or <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">reach out directly</a> in the meantime.</p>
       </div>
 
+      <div id="already-in" style="display:none;">
+        <p style="margin:0 0 16px;">You're already signed in as <strong id="who"></strong>.</p>
+        <a id="go-on" class="btn btn-primary" style="width:100%; justify-content:center;" href="/resources.html">Continue</a>
+        <p style="margin:14px 0 0; font-size:0.85rem;">
+          Not you? <a href="#" id="sign-out" style="color:var(--gold-dim); font-weight:600;">Sign out</a>
+        </p>
+      </div>
+
       <form id="login-form">
         <div class="field">
           <label for="li-email">Email</label>
@@ -57,9 +65,33 @@
       return;
     }
 
-    // Already logged in? Skip straight to resources.
+    // A stale Supabase session used to bounce straight past this page, which made
+    // the login link look "stuck" — there was no way to reach the form or to sign
+    // in as anyone else. Now an existing session is SHOWN, with a way out of it.
+    // /login.html?signout=1 forces a clean slate.
+    var params = new URLSearchParams(window.location.search);
+    if (params.get("signout")) {
+      await window.MeridianAuth.hardLogout();
+      window.location.replace("/login.html");
+      return;
+    }
+
     var user = await window.MeridianAuth.getSessionUser();
-    if (user) { window.location.href = "/resources.html"; return; }
+    if (user) {
+      var profile = await window.MeridianAuth.getProfile(user.id);
+      document.getElementById("login-form").style.display = "none";
+      var box = document.getElementById("already-in");
+      box.style.display = "block";
+      document.getElementById("who").textContent = user.email;
+      document.getElementById("go-on").href =
+        (profile && profile.role === "admin") ? "/portal.html" : "/resources.html";
+      document.getElementById("sign-out").addEventListener("click", async function (e) {
+        e.preventDefault();
+        await window.MeridianAuth.hardLogout();
+        window.location.replace("/login.html");
+      });
+      return;
+    }
 
     var form = document.getElementById("login-form");
     var status = document.getElementById("login-status");
@@ -81,7 +113,11 @@
             await navigator.credentials.store(cred);
           }
         } catch (e) { /* non-fatal */ }
-        window.location.href = "/resources.html";
+        // Admins land on the portal chooser; everyone else goes to resources.
+        var u = await window.MeridianAuth.getSessionUser();
+        var prof = u ? await window.MeridianAuth.getProfile(u.id) : null;
+        window.location.href =
+          (prof && prof.role === "admin") ? "/portal.html" : "/resources.html";
       }
     });
   });

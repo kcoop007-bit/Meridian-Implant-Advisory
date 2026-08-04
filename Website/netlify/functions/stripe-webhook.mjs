@@ -105,6 +105,22 @@ export default async (req) => {
     const tier = tierFromLineItems(s.line_items && s.line_items.data);
     if (!email || !tier) return ok("missing email/tier");
 
+    // Bronze is the book only: no implementation support, no portal, and so no
+    // account at all. Creating one would leave a login that leads nowhere and a
+    // profile row that every tier check downstream then has to special-case.
+    // Recorded as a purchase, not provisioned as a client.
+    if (tier === "bronze") {
+      try {
+        await sb("memberships?on_conflict=stripe_session_id", {
+          method: "POST",
+          headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+          body: JSON.stringify([{ stripe_session_id: sessionId, email, tier }])
+        });
+      } catch (e) { /* best-effort: the sale is already recorded in Stripe */ }
+      await sendWelcomeEmail(email, tier, null);
+      return ok("bronze: book only, no account provisioned");
+    }
+
     // #1 — create the account (or reuse) and stamp the tier.
     let userId;
     const rnd = crypto.randomBytes(24).toString("hex");

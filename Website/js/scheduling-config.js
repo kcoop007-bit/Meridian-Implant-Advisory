@@ -14,6 +14,16 @@ window.MERIDIAN_SCHED = {
     { n: 5, title: "Money & Paperwork",                       dur: 120 },
     { n: 6, title: "Clinical Track — Surgery Day & Maintenance", dur: 90 }
   ],
+  // A 30-minute onboarding call sits one week ahead of Session 1 for Silver and
+  // Gold. It is scheduled automatically from the Session 1 slot the client picks
+  // rather than chosen separately — one fewer decision, and it cannot drift.
+  onboardingCall: {
+    title: "Onboarding Call",
+    dur: 30,
+    leadDaysBeforeSession1: 7,
+    tiers: ["silver", "gold"]
+  },
+
   gapMinDays: 14,          // earliest a session may sit after the previous one
   gapMaxDays: 21,          // latest ("2–3 weeks")
   firstLeadDays: 10,       // Session 1 no sooner than this many days out

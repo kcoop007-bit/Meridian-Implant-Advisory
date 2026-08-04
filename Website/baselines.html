@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baseline numbers — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .bl-group { border-top:1px solid var(--line,#E3DED5); margin-top:34px; padding-top:22px; }
+  .bl-group:first-of-type { border-top:0; margin-top:0; }
+  .bl-group h3 { font-size:1.12rem; margin:0 0 4px; }
+  .bl-group .hint { font-size:0.85rem; color:var(--text-faint,#7A736A); margin:0 0 16px; line-height:1.55; }
+  .bl-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:640px) { .bl-row { grid-template-columns:1fr; } }
+  .dk { display:flex; align-items:center; gap:7px; font-size:0.8rem; color:var(--text-faint,#7A736A); margin-top:5px; }
+  .dk input { width:auto; margin:0; }
+  .field input[disabled] { background:var(--paper-soft,#FAF7F2); color:var(--text-faint,#9A938A); }
+  .note-box {
+    border-left:3px solid var(--gold-dim,#B8863B); background:var(--paper-soft,#FAF7F2);
+    padding:14px 16px; font-size:0.86rem; line-height:1.6; margin:0 0 26px;
+  }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="soft" id="loading" style="padding:96px 0; text-align:center;">
+  <div class="container"><p>Loading…</p></div>
+</section>
+
+<section id="not-configured" style="display:none; padding:96px 0;">
+  <div class="container"><div class="card">
+    <p>The client portal isn't fully set up yet — <a href="/index.html#contact" style="color:var(--gold-dim); font-weight:600;">reach out</a> and we'll sort it.</p>
+  </div></div>
+</section>
+
+<section id="bl" style="display:none; padding:64px 0 100px;">
+  <div class="container" style="max-width:760px;">
+    <span class="eyebrow">Step 2 of 2</span>
+    <h2>Your baseline numbers</h2>
+    <p style="color:var(--text-soft); max-width:640px;">
+      These are the numbers we measure everything against. Capturing them now — before the
+      system changes anything — is what makes it possible to prove later whether it worked.
+    </p>
+
+    <div class="note-box">
+      <strong>If you don't track something, say so.</strong> Tick "we don't track this yet" and
+      leave it blank. That's a normal answer and a useful one — it tells us where to start.
+      Guessing a number is worse than leaving it empty, because every percentage we calculate
+      from here on would inherit the guess.
+    </div>
+
+    <p id="already-done" style="display:none; color:#2E7D4F; font-size:0.9rem;">
+      You've completed this before — your answers are below and can be updated.
+    </p>
+
+    <form id="bl-form">
+
+      <div class="bl-group">
+        <h3>Implant activity</h3>
+        <p class="hint">From your practice management software. These are historical facts, so
+          they're unaffected by anything we do from here.</p>
+        <div class="bl-row">
+          <div class="field"><label for="bl-imp12">Implants placed, last 12 months</label>
+            <input type="number" id="bl-imp12" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-imp12"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-imp1">Implants placed, last month</label>
+            <input type="number" id="bl-imp1" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-imp1"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-arch12">Full-arch cases, last 12 months</label>
+            <input type="number" id="bl-arch12" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-arch12"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-refout">Implant cases referred out, per month</label>
+            <input type="number" id="bl-refout" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-refout"> we don't track this yet</span></div>
+        </div>
+      </div>
+
+      <div class="bl-group">
+        <h3>The funnel</h3>
+        <p class="hint">Conversations opened → consults booked → cases accepted. Most practices
+          don't count the first one yet. If that's you, tick the box — starting to count it is
+          usually the first thing we fix.</p>
+        <div class="bl-row">
+          <div class="field"><label for="bl-conv">Conversations opened, last month</label>
+            <input type="number" id="bl-conv" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-conv"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-cons">Implant consults held, last month</label>
+            <input type="number" id="bl-cons" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-cons"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-acc">Cases accepted, last month</label>
+            <input type="number" id="bl-acc" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-acc"> we don't track this yet</span></div>
+          <div class="field"><label>Which of the three do you count today?</label>
+            <label style="font-weight:400; font-size:0.86rem;"><input type="checkbox" id="bl-tc-conv" style="width:auto;"> Conversations</label>
+            <label style="font-weight:400; font-size:0.86rem;"><input type="checkbox" id="bl-tc-cons" style="width:auto;"> Consults</label>
+            <label style="font-weight:400; font-size:0.86rem;"><input type="checkbox" id="bl-tc-acc" style="width:auto;"> Cases accepted</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="bl-group">
+        <h3>Money</h3>
+        <p class="hint">Out-the-door figures — what the patient actually pays, not list price.</p>
+        <div class="bl-row">
+          <div class="field"><label for="bl-fee-sl">Single implant — low end ($)</label><input type="number" id="bl-fee-sl" min="0" step="1"></div>
+          <div class="field"><label for="bl-fee-sh">Single implant — high end ($)</label><input type="number" id="bl-fee-sh" min="0" step="1"></div>
+          <div class="field"><label for="bl-fee-al">Full arch, per arch — low ($)</label><input type="number" id="bl-fee-al" min="0" step="1"></div>
+          <div class="field"><label for="bl-fee-ah">Full arch, per arch — high ($)</label><input type="number" id="bl-fee-ah" min="0" step="1"></div>
+          <div class="field"><label for="bl-rev">Implant revenue per month ($)</label>
+            <input type="number" id="bl-rev" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-rev"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-acv">Average case value ($)</label>
+            <input type="number" id="bl-acv" min="0" step="1"><span class="dk"><input type="checkbox" data-dk="bl-acv"> we don't track this yet</span></div>
+          <div class="field"><label for="bl-fin">Do you offer patient financing?</label>
+            <select id="bl-fin"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+          <div class="field"><label for="bl-finp">Through whom?</label><input type="text" id="bl-finp" placeholder="e.g. CareCredit, Sunbit"></div>
+        </div>
+      </div>
+
+      <div class="bl-group">
+        <h3>Where you're going</h3>
+        <p class="hint">These become the targets on your tracker.</p>
+        <div class="bl-row">
+          <div class="field"><label for="bl-t-imp">Target implants per month, 12 months out</label><input type="number" id="bl-t-imp" min="0" step="1"></div>
+          <div class="field"><label for="bl-t-acc">Target case acceptance rate (%)</label><input type="number" id="bl-t-acc" min="0" max="100" step="1"></div>
+        </div>
+        <div class="field"><label for="bl-vision">Your one-year vision, in a sentence</label>
+          <textarea id="bl-vision" rows="3" placeholder="e.g. a year from now, we place every single-tooth implant we diagnose instead of referring it out"></textarea></div>
+        <div class="field"><label for="bl-90">What would make the next 90 days a win?</label>
+          <textarea id="bl-90" rows="3"></textarea></div>
+        <div class="field"><label for="bl-block">Biggest blocker right now</label>
+          <textarea id="bl-block" rows="3"></textarea></div>
+      </div>
+
+      <button type="submit" id="bl-submit" class="btn btn-primary" style="margin-top:30px;">Save baselines &amp; open my tracker</button>
+      <p id="bl-status" style="margin:14px 0 0; font-size:0.88rem;"></p>
+    </form>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/access-logic.js"></script>
+<script src="/js/baselines.js"></script>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Choose a portal — Meridian Implant Advisory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/main.css">
+<style>
+  .portal-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:26px; }
+  @media (max-width:640px) { .portal-grid { grid-template-columns:1fr; } }
+  .portal-choice {
+    display:block; text-decoration:none; border:1px solid var(--line,#E3DED5);
+    border-radius:10px; padding:22px 20px; background:#fff; transition:border-color .15s;
+  }
+  .portal-choice:hover { border-color:var(--gold-dim,#B8863B); }
+  .portal-choice h3 { margin:0 0 6px; font-size:1.15rem; }
+  .portal-choice p { margin:0; font-size:0.86rem; color:var(--text-faint,#7A736A); line-height:1.5; }
+  .viewing-note {
+    margin-top:22px; padding:12px 14px; border-left:3px solid var(--gold-dim,#B8863B);
+    background:var(--paper-soft,#FAF7F2); font-size:0.84rem; line-height:1.55;
+  }
+</style>
+</head>
+<body>
+
+<div id="header-slot"></div>
+
+<section class="soft" style="padding:96px 0; min-height:70vh; display:flex; align-items:center;">
+  <div class="container" style="max-width:640px;">
+    <div class="card">
+      <span class="eyebrow">Admin</span>
+      <h2 style="font-size:1.6rem;">Where would you like to go?</h2>
+      <p id="signed-as" style="font-size:0.86rem; color:var(--text-faint);"></p>
+
+      <div id="loading"><p>Checking your account…</p></div>
+
+      <div id="chooser" style="display:none;">
+        <div class="portal-grid">
+          <a class="portal-choice" href="/resources.html">
+            <h3>Client portal</h3>
+            <p>See the site exactly as a client sees it — resources, scheduling and account pages.</p>
+          </a>
+          <a class="portal-choice" href="/admin.html">
+            <h3>Admin portal</h3>
+            <p>Manage clients, access, bookings and content.</p>
+          </a>
+        </div>
+        <div class="viewing-note">
+          Your admin account can reach every client page, so the client portal shows you the
+          full-access view rather than any one client's. To check what a specific tier sees,
+          use the preview control in the admin portal.
+        </div>
+        <p style="margin:20px 0 0; font-size:0.85rem;">
+          <a href="/login.html?signout=1" style="color:var(--gold-dim); font-weight:600;">Sign out</a>
+        </p>
+      </div>
+
+      <div id="not-admin" style="display:none;">
+        <p>This page is for administrators. Taking you to your resources…</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-slot"></div>
+
+<script src="/js/include.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="/js/supabase-config.js"></script>
+<script src="/js/auth.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", async function () {
+    var auth = await window.MeridianAuth.requireLogin("/login.html");
+    if (!auth.user) return;
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("signed-as").textContent = "Signed in as " + auth.user.email;
+
+    if (auth.profile && auth.profile.role === "admin") {
+      document.getElementById("chooser").style.display = "block";
+    } else {
+      // Not an admin — no chooser to make. Send them where they belong.
+      document.getElementById("not-admin").style.display = "block";
+      window.location.replace("/resources.html");
+    }
+  });
+</script>
+</body>
+</html>

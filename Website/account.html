@@ -23,6 +23,25 @@
 
 <div id="header-slot"></div>
 
+<section id="noaccess-note" style="display:none; padding:40px 0 0;">
+  <div class="container" style="max-width:760px;">
+    <div class="card" style="border-left:3px solid var(--gold-dim,#B8863B);">
+      <h3 style="margin:0 0 8px; font-size:1.1rem;">Your package is the book</h3>
+      <p style="margin:0 0 10px;">The client portal — resources, scheduling and the KPI tracker —
+        is part of the Silver and Gold programs. Your purchase covers the Playbook itself.</p>
+      <p style="margin:0;"><a href="/become-client.html" style="color:var(--gold-dim); font-weight:600;">See what Silver and Gold include</a></p>
+    </div>
+  </div>
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (new URLSearchParams(window.location.search).get("noaccess")) {
+      var n = document.getElementById("noaccess-note");
+      if (n) n.style.display = "block";
+    }
+  });
+</script>
+
 <section class="soft" id="loading" style="padding:96px 0; text-align:center;">
   <div class="container"><p>Loading...</p></div>
 </section>

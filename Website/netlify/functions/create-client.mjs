@@ -72,6 +72,16 @@ export default async (req) => {
     if (!email) return json({ error: "No email on the payment." }, 400);
     if (!tier) return json({ error: "Could not determine tier from payment." }, 400);
 
+    // Bronze buys the book and nothing else — there is no portal for it, so
+    // there is no account to create. Guarded here as well as in the webhook
+    // because this endpoint is reachable directly from the welcome page.
+    if (tier === "bronze") {
+      return json({
+        error: "The Bronze package is the book only and doesn't include portal access.",
+        tier: "bronze"
+      }, 403);
+    }
+
     // 2) Create the auth user (or set the password if they already exist).
     let userId;
     const created = await gotrue("admin/users", { method: "POST", body: JSON.stringify({ email, password, email_confirm: true }) });

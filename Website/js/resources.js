@@ -19,6 +19,15 @@
     // First-login onboarding gate: a non-admin client who hasn't completed the
     // onboarding questionnaire is sent there before seeing the portal.
     var isAdminEarly = auth.profile && auth.profile.role === "admin";
+
+    // Bronze is a book-and-materials tier and does not include the portal
+    // resource library. Server-side RLS enforces this too (v6 migration); this
+    // check only spares them a page of empty shelves.
+    if (!isAdminEarly && !window.MeridianAccess.canAccessPortal(auth.profile)) {
+      window.location.replace("/account.html?noaccess=1");
+      return;
+    }
+
     if (!isAdminEarly) {
       var ob = await client.from("onboarding_responses").select("user_id").eq("user_id", auth.user.id).maybeSingle();
       if (!ob.error && !ob.data) { window.location.href = "/onboarding.html"; return; }
@@ -28,6 +37,13 @@
       if (auth.profile && auth.profile.membership_tier === "gold") {
         var cs = await client.from("client_sessions").select("id").eq("user_id", auth.user.id).limit(1);
         if (!cs.error && (!cs.data || cs.data.length === 0)) { window.location.href = "/scheduling.html"; return; }
+      }
+
+      // Last gate: KPI baselines. Runs AFTER onboarding and scheduling so the
+      // order of the funnel is profile -> sessions -> baselines -> portal.
+      if (window.MeridianAccess.needsBaselines(auth.profile)) {
+        window.location.href = "/baselines.html";
+        return;
       }
     }
 

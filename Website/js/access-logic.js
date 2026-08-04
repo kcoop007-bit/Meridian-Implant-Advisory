@@ -13,6 +13,29 @@
   if (typeof module === "object" && module.exports) module.exports = api; // node
   root.MeridianAccess = api;                                             // browser
 })(typeof self !== "undefined" ? self : this, function () {
+  // Tiers permitted into the client portal resource library. Bronze is a
+  // book-and-materials tier: it does NOT include portal resources. Kept here,
+  // beside hasAccess, so the rule is unit-testable and has exactly one home —
+  // but note the UI check is a courtesy. The binding check is the RLS policy in
+  // supabase-schema-v6.sql; never rely on this alone.
+  var PORTAL_TIERS = ["silver", "gold"];
+
+  function canAccessPortal(profile) {
+    if (!profile) return false;
+    if (profile.role === "admin") return true;
+    if (profile.is_active === false) return false;
+    return PORTAL_TIERS.indexOf(profile.membership_tier) !== -1;
+  }
+
+  // Baselines are hard-gated: no KPI tracker until they exist, because a tracker
+  // with invented or empty baselines produces percentages that are worse than no
+  // number at all. Admins bypass so they can inspect a client's view.
+  function needsBaselines(profile) {
+    if (!profile) return false;
+    if (profile.role === "admin") return false;
+    return !profile.baselines_completed_at;
+  }
+
   function hasAccess(profile, entitlements, scope) {
     if (!profile) return false;
     if (profile.role === "admin") return true;
@@ -26,5 +49,6 @@
     });
     return !denied;
   }
-  return { hasAccess: hasAccess };
+  return { hasAccess: hasAccess, canAccessPortal: canAccessPortal,
+           needsBaselines: needsBaselines, PORTAL_TIERS: PORTAL_TIERS };
 });

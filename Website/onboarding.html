@@ -27,6 +27,13 @@
   .accept-row input { width:auto; margin-top:3px; }
   .accept-row label { margin:0; font-size:0.9rem; color:var(--text); cursor:pointer; }
 </style>
+<style>
+  .ob-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:640px) { .ob-row { grid-template-columns:1fr; } }
+  .hint-sm { display:block; font-size:0.78rem; color:var(--text-faint,#7A736A); margin-top:4px; line-height:1.45; }
+  .inline-check { font-weight:400; font-size:0.86rem; display:inline-block; margin-right:16px; }
+  .inline-check input { width:auto; margin-right:5px; }
+</style>
 </head>
 <body>
 
@@ -90,6 +97,83 @@
 
       <h3 style="margin-top:32px;">Acknowledgment &amp; Waiver</h3>
       <p style="font-size:0.85rem; color:var(--text-faint); margin-top:-4px;">Please read and accept before continuing.</p>
+      <div class="field">
+        <label for="ob-practice">Practice name</label>
+        <input type="text" id="ob-practice">
+      </div>
+
+      <div class="ob-row">
+        <div class="field"><label for="ob-address">Office address</label><input type="text" id="ob-address"></div>
+        <div class="field"><label for="ob-phone">Office phone</label><input type="tel" id="ob-phone"></div>
+        <div class="field"><label for="ob-website">Website</label><input type="url" id="ob-website" placeholder="https://"></div>
+        <div class="field"><label for="ob-tz">Time zone</label><input type="text" id="ob-tz" placeholder="e.g. Eastern"></div>
+      </div>
+
+      <div class="ob-row">
+        <div class="field">
+          <label for="ob-pms">Practice management software</label>
+          <select id="ob-pms">
+            <option value="">—</option><option>Dentrix</option><option>Eaglesoft</option>
+            <option>Open Dental</option><option>Curve</option><option>Denticon</option>
+            <option>Carestream</option><option>Other</option>
+          </select>
+          <span class="hint-sm">Lets us tell you exactly which report to run for your baseline numbers.</span>
+        </div>
+        <div class="field">
+          <label for="ob-active">Active patients (seen in the last ~18 months)</label>
+          <input type="number" id="ob-active" min="0" step="1">
+          <span class="hint-sm">The denominator for your own implant-opportunity number.</span>
+        </div>
+        <div class="field"><label for="ob-ops">Operatories</label><input type="number" id="ob-ops" min="0" step="1"></div>
+        <div class="field"><label for="ob-days">Clinical days per week</label><input type="number" id="ob-days" min="0" max="7" step="0.5"></div>
+      </div>
+
+      <div class="ob-row">
+        <div class="field"><label for="ob-placers">Doctors currently placing implants</label><input type="number" id="ob-placers" min="0" step="1"></div>
+        <div class="field"><label for="ob-imp12">Implants placed in the last 12 months</label><input type="number" id="ob-imp12" min="0" step="1"></div>
+        <div class="field">
+          <label for="ob-refout">Do you refer implant cases out?</label>
+          <select id="ob-refout"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select>
+        </div>
+        <div class="field"><label for="ob-refpartners">Referral partners</label><input type="text" id="ob-refpartners" placeholder="Who you refer to"></div>
+      </div>
+
+      <div class="field">
+        <label>Technology in-house</label>
+        <label class="inline-check"><input type="checkbox" id="ob-cbct"> CBCT</label>
+        <label class="inline-check"><input type="checkbox" id="ob-scanner"> Intraoral scanner</label>
+        <label class="inline-check"><input type="checkbox" id="ob-guided"> Guided surgery</label>
+        <label class="inline-check"><input type="checkbox" id="ob-mill"> In-house mill</label>
+      </div>
+
+      <div class="ob-row">
+        <div class="field">
+          <label for="ob-om">Dedicated office manager?</label>
+          <select id="ob-om"><option value="">—</option><option value="yes">Yes</option><option value="no">No</option></select>
+        </div>
+        <div class="field"><label for="ob-om-name">Office manager name</label><input type="text" id="ob-om-name"></div>
+        <div class="field"><label for="ob-om-email">Office manager email</label><input type="email" id="ob-om-email"></div>
+        <div class="field"><label for="ob-om-cell">Office manager cell</label><input type="tel" id="ob-om-cell"></div>
+      </div>
+
+      <div class="ob-row">
+        <div class="field"><label for="ob-clin-name">Main clinician name</label><input type="text" id="ob-clin-name"></div>
+        <div class="field"><label for="ob-clin-email">Main clinician email</label><input type="email" id="ob-clin-email"></div>
+        <div class="field"><label for="ob-clin-cell">Main clinician cell</label><input type="tel" id="ob-clin-cell"></div>
+        <div class="field"><label for="ob-windows">Best days/times for sessions</label><input type="text" id="ob-windows" placeholder="e.g. Tue/Thu mornings"></div>
+      </div>
+
+      <div class="field">
+        <label for="ob-team">Who else on the team needs portal access?</label>
+        <textarea id="ob-team" rows="3" placeholder="Name and email, one per line — everyone who should be able to log in"></textarea>
+        <span class="hint-sm">The whole team uses this material, not just the doctor.</span>
+      </div>
+
+      <div class="field">
+        <label for="ob-success">What does success look like six months from now?</label>
+        <textarea id="ob-success" rows="4" placeholder="In your own words."></textarea>
+      </div>
+
       <div class="waiver-box" id="waiver-box">
         <h4>Educational purpose only</h4>
         <p>The Meridian Implant Advisory program, booklet, templates, scripts, and all related materials are provided for educational and informational purposes only. They are not a substitute for formal clinical training, professional judgment, individualized diagnosis, or the standard of care required to practice implant dentistry.</p>

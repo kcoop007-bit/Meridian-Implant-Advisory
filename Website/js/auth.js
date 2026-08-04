@@ -38,10 +38,38 @@ window.MeridianAuth = (function () {
   }
 
   async function logout() {
-    var client = window.getSupabaseClient();
-    await client.auth.signOut();
+    await hardLogout();
     window.location.href = "/login.html";
   }
 
-  return { getSessionUser: getSessionUser, getProfile: getProfile, requireLogin: requireLogin, login: login, logout: logout };
+  // Sign out of EVERYTHING and clear the local token cache.
+  //
+  // signOut() alone leaves the supabase auth token in localStorage in some
+  // browsers, which is what left the client login link "stuck" — the page saw a
+  // session that the server had already invalidated and bounced past the form.
+  // scope:"global" also kills the refresh token server-side, so other tabs and
+  // devices are logged out too, which is what "logged out of everything" means.
+  async function hardLogout() {
+    var client = window.getSupabaseClient && window.getSupabaseClient();
+    if (client) {
+      try { await client.auth.signOut({ scope: "global" }); }
+      catch (e) { try { await client.auth.signOut(); } catch (e2) { /* offline */ } }
+    }
+    try {
+      Object.keys(window.localStorage)
+        .filter(function (k) { return /^sb-.*-auth-token/.test(k) || k.indexOf("supabase.auth") === 0; })
+        .forEach(function (k) { window.localStorage.removeItem(k); });
+      window.sessionStorage.clear();
+    } catch (e) { /* storage may be blocked */ }
+  }
+
+  async function isAdmin() {
+    var u = await getSessionUser();
+    if (!u) return false;
+    var p = await getProfile(u.id);
+    return !!(p && p.role === "admin");
+  }
+
+  return { getSessionUser: getSessionUser, getProfile: getProfile, requireLogin: requireLogin,
+           login: login, logout: logout, hardLogout: hardLogout, isAdmin: isAdmin };
 })();
