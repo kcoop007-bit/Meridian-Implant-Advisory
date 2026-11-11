@@ -18,24 +18,33 @@ window.MERIDIAN_SCHED = {
   // `remote` is carried for the three remote sessions (5, 8, 9) so a travel
   // buffer can skip them. Nothing consumes it yet; travelBufferMin is still 0.
   sessions: [
-    { n: 1, title: "Purpose, Offer & Your Numbers",            dur: 90,  remote: false },
-    { n: 2, title: "The Biology, and How We Say It",            dur: 180, remote: false },
-    { n: 3, title: "Finding the Patients You Already Have",     dur: 120, remote: false },
-    { n: 4, title: "The Consult: Knowing & Presenting",         dur: 180, remote: false },
-    { n: 5, title: "Money, Coding & Consent",                   dur: 90,  remote: true  },
-    { n: 6, title: "Case Selection & Treatment Planning",       dur: 180, remote: false },
-    { n: 7, title: "Surgery Day: Kit, Guide & Protocol",        dur: 90,  remote: false },
-    { n: 8, title: "Digital Workflow & Restorative",            dur: 120, remote: true  },
-    { n: 9, title: "Keeping It: Peri-Implantitis & Full-Arch",  dur: 150, remote: true  }
+    // Durations INCLUDE a 30-minute Implementation check-in at the START of Sessions 2-9
+  // (questions on prior sessions, implementation, issues) - ruled by Kevin 2026-11-11.
+  // Content time = dur - 30 for sessions 2-9; Session 1 has no check-in.
+  { n: 1, title: "Purpose, Offer & Your Numbers",            dur: 90,  remote: false },
+    { n: 2, title: "The Biology, and How We Say It",            dur: 210, remote: false },
+    { n: 3, title: "Finding the Patients You Already Have",     dur: 150, remote: false },
+    { n: 4, title: "The Consult: Knowing & Presenting",         dur: 210, remote: false },
+    { n: 5, title: "Money, Coding & Consent",                   dur: 120,  remote: true  },
+    { n: 6, title: "Case Selection & Treatment Planning",       dur: 210, remote: false },
+    { n: 7, title: "Surgery Day: Kit, Guide & Protocol",        dur: 120,  remote: false },
+    { n: 8, title: "Digital Workflow & Restorative",            dur: 150, remote: true  },
+    { n: 9, title: "Keeping It: Peri-Implantitis & Full-Arch",  dur: 180, remote: true  }
   ],
   // A 30-minute onboarding call sits one week ahead of Session 1 for Silver and
   // Gold. It is scheduled automatically from the Session 1 slot the client picks
   // rather than chosen separately — one fewer decision, and it cannot drift.
+  // Booked FIRST, before Session 1 (Kevin, 2026-11-11): owner + office manager, by video.
+  // Covers the implementation plan, the office manager's role and data entry, and the
+  // portal/resources walkthrough. Stored as session_number 0. Gold only.
   onboardingCall: {
-    title: "Onboarding Call",
-    dur: 30,
-    leadDaysBeforeSession1: 7,
-    tiers: ["silver", "gold"]
+    title: "Onboarding & Portal Walkthrough",
+    dur: 60,
+    format: "video",
+    leadDays: 2,             // no sooner than this many days out
+    minDaysBeforeS1: 3,      // Session 1 sits 3–14 days after it
+    maxDaysBeforeS1: 14,
+    tiers: ["gold"]
   },
 
   gapMinDays: 14,          // earliest a session may sit after the previous one

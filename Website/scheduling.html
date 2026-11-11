@@ -71,7 +71,7 @@
       <div id="summary"></div>
       <p id="review-msg" class="muted" style="margin-top:14px;"></p>
       <div style="margin-top:18px; display:flex; gap:12px; align-items:center;">
-        <button id="confirm-btn" class="btn btn-dark">Confirm all nine sessions</button>
+        <button id="confirm-btn" class="btn btn-dark">Confirm all bookings</button>
         <button id="restart-btn" class="btn-link">Start over</button>
       </div>
     </div>
@@ -99,6 +99,11 @@
   var picks = [];         // [{n, startMs, dur}]
   var nowMs = Date.now();
   var calMI = null, selDay = null; // calendar month-index + selected day
+  // Booking steps: the onboarding call (session 0) comes first, then Sessions 1–9.
+  var OB = CFG.onboardingCall;
+  var STEPS = [{ n: 0, title: OB.title, dur: OB.dur }].concat(CFG.sessions);
+  function stepName(st) { return st.n === 0 ? "Onboarding Call" : "Session " + st.n; }
+  function stepPill(st) { return st.n === 0 ? "Onboard" : "S" + st.n; }
 
   // ---- ET helpers (mirror the server) ----
   function etOffset(ms) {
@@ -122,6 +127,8 @@
   function addDaysEt(y, mo, d, n) { var t = Date.UTC(y, mo - 1, d) + n * 864e5, dd = new Date(t); return { y: dd.getUTCFullYear(), mo: dd.getUTCMonth() + 1, d: dd.getUTCDate() }; }
   function fmtDay(ms) { return new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, weekday: "long", month: "short", day: "numeric" }).format(new Date(ms)); }
   function fmtTime(ms) { return new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, hour: "numeric", minute: "2-digit" }).format(new Date(ms)) + " ET"; }
+  // "9:00 AM – 10:30 AM ET": clients see the whole block they must clear, not just the start.
+  function fmtRange(ms, dur) { var f = new Intl.DateTimeFormat("en-US", { timeZone: CFG.tz, hour: "numeric", minute: "2-digit" }); return f.format(new Date(ms)) + " – " + f.format(new Date(ms + dur * 60000)) + " ET"; }
 
   function conflict(startMs, dur) {
     var a = startMs - CFG.travelBufferMin * 60000, b = startMs + dur * 60000 + CFG.travelBufferMin * 60000;
@@ -151,12 +158,21 @@
   }
 
   function windowFor(idx) {
-    if (idx === 0) {
-      var f = etParts(nowMs + CFG.firstLeadDays * 864e5);
-      var t = addDaysEt(f.y, f.mo, f.d, CFG.session1HorizonDays);
-      return { fromMs: etToUtcMs(f.y, f.mo, f.d, 0, 0), toMs: etToUtcMs(t.y, t.mo, t.d, 23, 59) };
+    var f = etParts(nowMs + CFG.firstLeadDays * 864e5);
+    var hEnd = addDaysEt(f.y, f.mo, f.d, CFG.session1HorizonDays);           // last day Session 1 may sit
+    if (idx === 0) {                                                        // onboarding call
+      var o = etParts(nowMs + OB.leadDays * 864e5);
+      var oEnd = addDaysEt(hEnd.y, hEnd.mo, hEnd.d, -OB.minDaysBeforeS1);
+      return { fromMs: etToUtcMs(o.y, o.mo, o.d, 0, 0), toMs: etToUtcMs(oEnd.y, oEnd.mo, oEnd.d, 23, 59) };
     }
     var prev = etParts(picks[idx - 1].startMs);
+    if (idx === 1) {                                                        // Session 1: 3–14 days after onboarding
+      var a1 = addDaysEt(prev.y, prev.mo, prev.d, OB.minDaysBeforeS1);
+      var b1 = addDaysEt(prev.y, prev.mo, prev.d, OB.maxDaysBeforeS1);
+      var from1 = Math.max(etToUtcMs(a1.y, a1.mo, a1.d, 0, 0), etToUtcMs(f.y, f.mo, f.d, 0, 0));
+      var to1 = Math.min(etToUtcMs(b1.y, b1.mo, b1.d, 23, 59), etToUtcMs(hEnd.y, hEnd.mo, hEnd.d, 23, 59));
+      return { fromMs: from1, toMs: to1 };
+    }
     var a = addDaysEt(prev.y, prev.mo, prev.d, CFG.gapMinDays);
     var b = addDaysEt(prev.y, prev.mo, prev.d, CFG.gapMaxDays);
     return { fromMs: etToUtcMs(a.y, a.mo, a.d, 0, 0), toMs: etToUtcMs(b.y, b.mo, b.d, 23, 59) };
@@ -165,7 +181,7 @@
   // open slot start-times (ms) for one ET calendar day, honoring the window,
   // work hours, conflicts, and the lead time.
   function daySlots(idx, y, mo, d) {
-    var s = CFG.sessions[idx], dur = s.dur, win = windowFor(idx), out = [];
+    var s = STEPS[idx], dur = s.dur, win = windowFor(idx), out = [];
     var probe = etParts(etToUtcMs(y, mo, d, 12, 0));
     if (probe.weekday < 1 || probe.weekday > 5) return out;
     if (isUsHoliday(y, mo, d)) return out;
@@ -189,10 +205,10 @@
 
   function renderRail() {
     var rail = document.getElementById("rail"); rail.innerHTML = "";
-    CFG.sessions.forEach(function (s, i) {
+    STEPS.forEach(function (s, i) {
       var el = document.createElement("span");
       el.className = "pill " + (i < picks.length ? "done" : (i === picks.length ? "current" : ""));
-      el.textContent = "S" + s.n + (i < picks.length ? " ✓" : "");
+      el.textContent = stepPill(s) + (i < picks.length ? " ✓" : "");
       rail.appendChild(el);
     });
   }
@@ -200,9 +216,9 @@
   function renderPicker() {
     renderRail();
     var idx = picks.length, host = document.getElementById("picker");
-    if (idx >= CFG.sessions.length) { showReview(); return; }
+    if (idx >= STEPS.length) { showReview(); return; }
     if (renderPicker._idx !== idx) { renderPicker._idx = idx; selDay = null; calMI = null; }
-    var s = CFG.sessions[idx], win = windowFor(idx);
+    var s = STEPS[idx], win = windowFor(idx);
     var startMI = monthIndex(etParts(win.fromMs).y, etParts(win.fromMs).mo);
     var endMI = monthIndex(etParts(win.toMs).y, etParts(win.toMs).mo);
     if (calMI === null) calMI = startMI;
@@ -211,18 +227,19 @@
 
     host.innerHTML = "";
     var head = document.createElement("div"); head.className = "sess-head";
-    head.innerHTML = '<h3 style="margin:0;">Session ' + s.n + ': ' + s.title + '</h3><span class="dur">' + s.dur + ' min</span>';
+    head.innerHTML = '<h3 style="margin:0;">' + stepName(s) + ': ' + s.title + '</h3><span class="dur">' + s.dur + ' min</span>';
+    if (s.n === 0) { var ob = document.createElement("p"); ob.className = "muted"; ob.textContent = "A 60-minute video call for the practice owner and office manager, before Session 1: how implementation will run, the office manager's role and data entry, and a walkthrough of the portal and resources."; head.appendChild(ob); }
     host.appendChild(head);
     if (idx > 0) {
-      var back = document.createElement("button"); back.className = "btn-link"; back.textContent = "← change Session " + CFG.sessions[idx - 1].n;
+      var back = document.createElement("button"); back.className = "btn-link"; back.textContent = "← change " + stepName(STEPS[idx - 1]);
       back.onclick = function () { picks.pop(); renderPicker._idx = null; renderPicker(); };
       host.appendChild(back);
     }
 
     if (!windowHasAny(idx, win)) {
       var none = document.createElement("p"); none.className = "muted";
-      none.innerHTML = "No open times in the two-to-three-week window for this session. " +
-        (idx > 0 ? "Try an earlier time for the previous session, or " : "") +
+      none.innerHTML = "No open times in the window for this " + (idx === 1 ? "session (3–14 days after the onboarding call). " : (idx === 0 ? "call. " : "session (2–3 weeks after the last one). ")) +
+        (idx > 0 ? "Try a different time for the previous step, or " : "") +
         '<a href="/index.html#contact">reach out</a> and we\'ll find a slot together.';
       host.appendChild(none);
       return;
@@ -266,7 +283,7 @@
       sh.appendChild(lab);
       var sg = document.createElement("div"); sg.className = "slot-grid";
       daySlots(idx, selDay.y, selDay.mo, selDay.d).forEach(function (ms) {
-        var b = document.createElement("button"); b.className = "slot"; b.textContent = fmtTime(ms);
+        var b = document.createElement("button"); b.className = "slot"; b.textContent = fmtRange(ms, s.dur);
         b.onclick = function () { picks.push({ n: s.n, startMs: ms, dur: s.dur }); renderPicker._idx = null; renderPicker(); };
         sg.appendChild(b);
       });
@@ -284,8 +301,8 @@
     var sum = document.getElementById("summary"); sum.innerHTML = "";
     picks.forEach(function (p, i) {
       var row = document.createElement("div"); row.className = "summary-row";
-      row.innerHTML = '<div><strong>Session ' + p.n + '</strong> · ' + CFG.sessions[i].title + '</div>' +
-        '<div class="when">' + fmtDay(p.startMs) + ' · ' + fmtTime(p.startMs) + '</div>';
+      row.innerHTML = '<div><strong>' + stepName(STEPS[i]) + '</strong> · ' + STEPS[i].title + '</div>' +
+        '<div class="when">' + fmtDay(p.startMs) + ' · ' + fmtRange(p.startMs, p.dur) + '</div>';
       sum.appendChild(row);
     });
   }
@@ -306,7 +323,7 @@
       var dl = document.getElementById("done-list"); dl.innerHTML = "";
       picks.forEach(function (p, i) {
         var row = document.createElement("div"); row.className = "summary-row";
-        row.innerHTML = '<div><strong>Session ' + p.n + '</strong> · ' + CFG.sessions[i].title + '</div><div class="when">' + fmtDay(p.startMs) + ' · ' + fmtTime(p.startMs) + '</div>';
+        row.innerHTML = '<div><strong>' + stepName(STEPS[i]) + '</strong> · ' + STEPS[i].title + '</div><div class="when">' + fmtDay(p.startMs) + ' · ' + fmtRange(p.startMs, p.dur) + '</div>';
         dl.appendChild(row);
       });
     } catch (e) { msg.className = "err"; msg.textContent = "Network error — please try again."; btn.disabled = false; }
@@ -321,7 +338,7 @@
     rows.sort(function (a, b) { return a.session_number - b.session_number; }).forEach(function (r) {
       var ms = Date.parse(r.starts_at);
       var row = document.createElement("div"); row.className = "summary-row";
-      row.innerHTML = '<div><strong>Session ' + r.session_number + '</strong></div><div class="when">' + fmtDay(ms) + ' · ' + fmtTime(ms) + '</div>';
+      row.innerHTML = '<div><strong>' + (r.session_number === 0 ? "Onboarding Call" : "Session " + r.session_number) + '</strong></div><div class="when">' + fmtDay(ms) + ' · ' + (r.ends_at ? fmtRange(ms, (Date.parse(r.ends_at) - ms) / 60000) : fmtRange(ms, (STEPS[r.session_number] || { dur: 0 }).dur)) + '</div>';
       dl.appendChild(row);
     });
   }
