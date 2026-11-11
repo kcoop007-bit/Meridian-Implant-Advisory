@@ -25,6 +25,26 @@ const SESSIONS = [
 ];
 const GAP_MIN = 14, GAP_MAX = 21, LEAD = 10, WORKSTART = 9, WORKEND = 17, BUFFER = 0;
 
+  // ---- US holidays: never offered or accepted for a session ----
+// DUPLICATED, deliberately, in netlify/functions/book-sessions.mjs (the server re-validates).
+// Fixed-date holidays also block their weekday "observed" day (Sat -> Fri, Sun -> Mon).
+function usHolidaySet(y) {
+  var out = {};
+function key(t) { var d = new Date(t); return d.getUTCFullYear() + "-" + ("0" + (d.getUTCMonth() + 1)).slice(-2) + "-" + ("0" + d.getUTCDate()).slice(-2); }
+function fixed(m, d) { var t = Date.UTC(y, m - 1, d), wd = new Date(t).getUTCDay(); out[key(t)] = 1; if (wd === 6) out[key(t - 864e5)] = 1; if (wd === 0) out[key(t + 864e5)] = 1; }
+function nth(m, wd, n) { var first = new Date(Date.UTC(y, m - 1, 1)).getUTCDay(); return Date.UTC(y, m - 1, 1 + ((wd - first + 7) % 7) + (n - 1) * 7); }
+function last(m, wd) { var t = Date.UTC(y, m, 0), dw = new Date(t).getUTCDay(); return t - ((dw - wd + 7) % 7) * 864e5; }
+  fixed(1, 1); fixed(7, 4); fixed(12, 24); fixed(12, 25); fixed(12, 31);   // New Year's, July 4th, Christmas Eve/Day, New Year's Eve
+  out[key(last(5, 1))] = 1;                                                // Memorial Day
+  out[key(nth(9, 1, 1))] = 1;                                              // Labor Day
+  var tg = nth(11, 4, 4); out[key(tg)] = 1; out[key(tg + 864e5)] = 1;      // Thanksgiving + the Friday after
+  return out;
+}
+function isUsHoliday(y, mo, d) {
+  var k = y + "-" + ("0" + mo).slice(-2) + "-" + ("0" + d).slice(-2);
+  return !!(usHolidaySet(y)[k] || usHolidaySet(y + 1)[k]);
+}
+
 const b64url = (b) =>
   Buffer.from(b).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 const json = (o, s) =>
@@ -165,6 +185,7 @@ export default async (req) => {
       const et = etParts(s);
       const startMin = et.hh * 60 + et.mm, endMin = startMin + SESSIONS[i].dur;
       if (et.weekday < 1 || et.weekday > 5) return json({ error: `Session ${SESSIONS[i].n} must be a weekday.` }, 400);
+      if (isUsHoliday(et.y, et.mo, et.d)) return json({ error: `Session ${SESSIONS[i].n} falls on a holiday.` }, 400);
       if (startMin < WORKSTART * 60 || endMin > WORKEND * 60) return json({ error: `Session ${SESSIONS[i].n} must sit within 9–5 ET.` }, 400);
       starts.push({ n: SESSIONS[i].n, i, s, dur: SESSIONS[i].dur, et });
     }
