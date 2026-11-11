@@ -32,7 +32,7 @@
       var ob = await client.from("onboarding_responses").select("user_id").eq("user_id", auth.user.id).maybeSingle();
       if (!ob.error && !ob.data) { window.location.href = "/onboarding.html"; return; }
 
-      // Gold clients who have onboarded but not yet scheduled their six
+      // Gold clients who have onboarded but not yet scheduled their nine
       // sessions are sent to the scheduler before seeing the portal.
       if (auth.profile && auth.profile.membership_tier === "gold") {
         var cs = await client.from("client_sessions").select("id").eq("user_id", auth.user.id).limit(1);

@@ -3,20 +3,25 @@
 // Header: Authorization: Bearer <supabase user access token>
 //
 // Server-authoritative: re-validates durations, 9–5 ET weekday window, the
-// 2–3 week gaps, the lead time, and live conflicts before creating the six
+// 2–3 week gaps, the lead time, and live conflicts before creating the nine
 // Google Calendar events and storing them. Rolls back events if the DB write
 // fails. Env: GOOGLE_SA_KEY, GCAL_ID, M365_ICS_FEEDS, SUPABASE_URL,
 // SUPABASE_SERVICE_ROLE_KEY.
 import crypto from "node:crypto";
 
 // ---- config (must mirror js/scheduling-config.js) ----
+// The nine sessions. Server-authoritative copy — see the note in
+// js/scheduling-config.js. `checks/check_sessions.py` fails if the two drift.
 const SESSIONS = [
-  { n: 1, title: "Purpose & Offer", dur: 90 },
-  { n: 2, title: "Biology & Language", dur: 90 },
-  { n: 3, title: "Finding Patients", dur: 90 },
-  { n: 4, title: "Knowing the Patient & Presenting", dur: 120 },
-  { n: 5, title: "Money & Paperwork", dur: 120 },
-  { n: 6, title: "Clinical Track — Surgery Day & Maintenance", dur: 90 }
+  { n: 1, title: "Purpose, Offer & Your Numbers",           dur: 90  },
+  { n: 2, title: "The Biology, and How We Say It",          dur: 180 },
+  { n: 3, title: "Finding the Patients You Already Have",   dur: 120 },
+  { n: 4, title: "The Consult: Knowing & Presenting",       dur: 180 },
+  { n: 5, title: "Money, Coding & Consent",                 dur: 90  },
+  { n: 6, title: "Case Selection & Treatment Planning",     dur: 180 },
+  { n: 7, title: "Surgery Day: Kit, Guide & Protocol",      dur: 90  },
+  { n: 8, title: "Digital Workflow & Restorative",          dur: 120 },
+  { n: 9, title: "Keeping It: Peri-Implantitis & Full-Arch", dur: 150 }
 ];
 const GAP_MIN = 14, GAP_MAX = 21, LEAD = 10, WORKSTART = 9, WORKEND = 17, BUFFER = 0;
 
@@ -148,7 +153,7 @@ export default async (req) => {
 
     const body = await req.json();
     const picks = (body && body.sessions) || [];
-    if (picks.length !== SESSIONS.length) return json({ error: "All six sessions are required." }, 400);
+    if (picks.length !== SESSIONS.length) return json({ error: "All nine sessions are required." }, 400);
 
     const now = Date.now();
     const starts = [];
@@ -192,7 +197,7 @@ export default async (req) => {
         const title = (practiceLabel ? practiceLabel + " — " : "") + `Meridian Session ${st.n}: ` + SESSIONS[st.i].title;
         const ev = {
           summary: title,
-          description: `Session ${st.n} of 6 — Meridian implementation.\nReview the previous session's Next Steps and bring the Session ${st.n} worksheets.`,
+          description: `Session ${st.n} of 9 — Meridian implementation.\nReview the previous session's Next Steps and bring the Session ${st.n} worksheets.`,
           start: { dateTime: new Date(st.s).toISOString(), timeZone: "America/New_York" },
           end: { dateTime: new Date(st.s + st.dur * 60000).toISOString(), timeZone: "America/New_York" }
         };
