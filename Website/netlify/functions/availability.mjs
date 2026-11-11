@@ -98,12 +98,14 @@ async function googleBusy(token, calId, fromISO, toISO) {
 // freeBusy rejects long ranges ("timeRangeTooLong"), so query in ~30-day chunks.
 async function googleBusyRange(token, calId, fromMs, toMs) {
   const CHUNK = 30 * 864e5;
-  let out = [];
+  // Chunks run in parallel: the window now reaches ~a year out (Session 1 up to 6 months ahead
+  // plus eight 2–3-week gaps), and a dozen sequential calls risked the function timeout.
+  const jobs = [];
   for (let s = fromMs; s < toMs; s += CHUNK) {
     const e = Math.min(s + CHUNK, toMs);
-    out = out.concat(await googleBusy(token, calId, new Date(s).toISOString(), new Date(e).toISOString()));
+    jobs.push(googleBusy(token, calId, new Date(s).toISOString(), new Date(e).toISOString()));
   }
-  return out;
+  return (await Promise.all(jobs)).flat();
 }
 
 export default async (req) => {

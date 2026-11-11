@@ -335,7 +335,10 @@
 
     await loadPractice(auth.user.id);
 
-    var toISO = new Date(nowMs + 175 * 864e5).toISOString();
+    // Busy-time window must cover the LAST possible session, not a fixed 175 days: Session 1 can now
+    // sit up to session1HorizonDays out, and every later session up to gapMaxDays after the one before.
+    var spanDays = CFG.firstLeadDays + CFG.session1HorizonDays + (CFG.sessions.length - 1) * CFG.gapMaxDays + 7;
+    var toISO = new Date(nowMs + spanDays * 864e5).toISOString();
     var av = await fetch("/.netlify/functions/availability?from=" + new Date(nowMs).toISOString() + "&to=" + toISO);
     var data = await av.json();
     if (data.error) { document.getElementById("loading").textContent = "Couldn't load availability: " + data.error; return; }

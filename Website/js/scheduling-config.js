@@ -41,7 +41,7 @@ window.MERIDIAN_SCHED = {
   gapMinDays: 14,          // earliest a session may sit after the previous one
   gapMaxDays: 21,          // latest ("2–3 weeks")
   firstLeadDays: 10,       // Session 1 no sooner than this many days out
-  session1HorizonDays: 30, // how far ahead to offer Session 1 slots
+  session1HorizonDays: 182, // how far ahead to offer Session 1 slots (~6 months; was 30, ruled too tight 2026-11-11)
   workStartHour: 9,        // Mon–Fri 9–5, Eastern
   workEndHour: 17,
   slotStepMin: 30,         // slot start granularity
